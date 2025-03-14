@@ -3,10 +3,10 @@ import 'package:healty_ways/resources/app_colors.dart';
 
 class HomeButton extends StatelessWidget {
   final String title;
-  final Function onTap;
+  final GestureTapCallback onTap;
   final Color color;
 
-  HomeButton({
+  const HomeButton({
     super.key,
     required this.title,
     required this.onTap,
@@ -16,7 +16,7 @@ class HomeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap(),
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         decoration: BoxDecoration(

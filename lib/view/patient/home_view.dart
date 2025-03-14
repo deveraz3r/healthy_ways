@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healty_ways/resources/app_colors.dart';
 import 'package:healty_ways/resources/components/build_calendar.dart';
 import 'package:healty_ways/resources/components/home_button.dart';
 import 'package:healty_ways/resources/components/medication_card.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -80,24 +83,32 @@ class HomeView extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         HomeButton(
-          title: 'Medicaiton History',
+          title: 'Inventory',
           color: AppColors.primaryColor,
-          onTap: () {},
-        ),
-        HomeButton(
-          title: 'Request Medicaiton',
-          color: AppColors.blueColor,
-          onTap: () {},
-        ),
-        HomeButton(
-          title: 'Dlivery Status',
-          color: AppColors.orangeColor,
-          onTap: () {},
+          onTap: () {
+            Get.toNamed(RouteName.patientInventory);
+          },
         ),
         HomeButton(
           title: 'Doctors',
+          color: AppColors.blueColor,
+          onTap: () {
+            Get.toNamed(RouteName.patientBookDoctor);
+          },
+        ),
+        HomeButton(
+          title: 'Appointment History',
+          color: AppColors.orangeColor,
+          onTap: () {
+            Get.toNamed(RouteName.patientAppointmentHistory);
+          },
+        ),
+        HomeButton(
+          title: 'Medication History',
           color: AppColors.purpleColor,
-          onTap: () {},
+          onTap: () {
+            Get.toNamed(RouteName.patientMedicationsHistory);
+          },
         ),
       ],
     );
