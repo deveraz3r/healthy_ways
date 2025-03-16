@@ -1,7 +1,7 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view/patient/home_view.dart';
 
-// LOGIN PAGE
 class LoginView extends StatefulWidget {
   @override
   _LoginViewState createState() => _LoginViewState();
@@ -9,6 +9,21 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   bool _obscurePassword = true;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  // Google Sign-In Function
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser != null) {
+        // Successfully signed in
+        print("Google Sign-In successful: ${googleUser.email}");
+        Get.offAll(HomeView());
+      }
+    } catch (error) {
+      print("Google Sign-In Error: $error");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,18 +54,19 @@ class _LoginViewState extends State<LoginView> {
             SizedBox(height: 24),
 
             // Login Button
-            ReuseableElevatedbutton(
-              buttonName: "LOGIN",
-              color: Colors.teal,
-              onPressed: () {
+            buildButton(
+              "LOGIN",
+              Colors.teal,
+              () {
                 // Handle login logic
-                // Get.offAll(RouteName.patientHome);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeView()),
-                );
+                Get.offAll(HomeView());
               },
             ),
+
+            SizedBox(height: 16),
+
+            // Google Sign-In Button
+            buildGoogleButton(),
 
             SizedBox(height: 16),
 
@@ -112,6 +128,29 @@ class _LoginViewState extends State<LoginView> {
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
+        ),
+      ),
+    );
+  }
+
+  // Function to Build Google Sign-In Button
+  Widget buildGoogleButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _handleGoogleSignIn,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(color: Colors.grey),
+          ),
+        ),
+        icon: Image.asset("assets/images/google.png", height: 24),
+        label: Text(
+          "Login with Google",
+          style: TextStyle(fontSize: 16, color: Colors.black),
         ),
       ),
     );

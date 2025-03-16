@@ -5,6 +5,7 @@ import 'package:healty_ways/view/patient/book_doctor_view.dart';
 import 'package:healty_ways/view/patient/home_view.dart';
 import 'package:healty_ways/view/patient/inventory_view.dart';
 import 'package:healty_ways/view/patient/medication_history_view.dart';
+import 'package:healty_ways/view/patient/pharmacy_delivery_view.dart';
 import 'package:healty_ways/view/patient/request_medicne_view.dart';
 import 'package:healty_ways/view/shared/auth/login_view.dart';
 import 'package:healty_ways/view/shared/auth/signup_view.dart';
@@ -37,6 +38,10 @@ class Routes {
         GetPage(
           name: RouteName.patientInventory,
           page: () => InventoryView(),
+        ),
+        GetPage(
+          name: RouteName.patientPharmacy,
+          page: () => PharmacyView(),
         ),
         // GetPage(
         //   name: RouteName.patientDliveryStatus,

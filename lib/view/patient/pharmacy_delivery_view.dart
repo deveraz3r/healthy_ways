@@ -1,17 +1,21 @@
-import 'package:healty_ways/view_model/patient/inventory_view_model.dart';
-import 'package:healty_ways/resources/components/inventory_medicne_card.dart';
-import 'package:healty_ways/utils/app_urls.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:healty_ways/resources/components/reusable_app_bar.dart';
+import 'package:healty_ways/utils/routes/route_name.dart';
+import 'package:healty_ways/view_model/patient/pharmacy_delivery_view_model.dart';
+import 'package:healty_ways/resources/components/date_group_card.dart';
 
-class InventoryView extends StatelessWidget {
-  InventoryView({super.key});
+class PharmacyView extends StatelessWidget {
+  PharmacyView({super.key});
 
-  final InventoryViewModel inventoryViewModel = Get.put(InventoryViewModel());
+  final PharmacyDeliveryViewModel deliveryViewModel =
+      Get.put(PharmacyDeliveryViewModel());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        titleText: "Inventory",
+        titleText: 'Pharmacy Delivery',
         // enableBack: true,
         leading: IconButton(
           onPressed: () => Get.back(),
@@ -37,14 +41,13 @@ class InventoryView extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        return ListView.builder(
+        return ListView.separated(
           padding: const EdgeInsets.all(16),
-          itemCount: inventoryViewModel.medicines.length,
+          itemCount: deliveryViewModel.deliveries.length,
+          separatorBuilder: (context, index) => const Divider(),
           itemBuilder: (context, index) {
-            final medicine = inventoryViewModel.medicines[index];
-            return InventoryMedicneCard(
-              medicine: medicine,
-            );
+            final delivery = deliveryViewModel.deliveries[index];
+            return DateGroupCard(delivery: delivery); // Use the DateGroupCard
           },
         );
       }),

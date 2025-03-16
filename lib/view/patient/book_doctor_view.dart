@@ -8,7 +8,14 @@ class BookDoctorView extends StatelessWidget {
     return Scaffold(
       appBar: ReusableAppBar(
         titleText: "Doctors",
-        enableBack: true,
+        // enableBack: true,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(
+            Icons.home,
+            color: Colors.white,
+          ),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

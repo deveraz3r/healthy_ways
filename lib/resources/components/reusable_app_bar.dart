@@ -22,28 +22,28 @@ class ReusableAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget? appBarTitle;
 
   final Widget _backButton = IconButton(
-      onPressed: (){
+      onPressed: () {
         Get.back();
       },
       icon: const Icon(
         Icons.arrow_back,
         color: Colors.white,
-      )
-  );
+      ));
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: AppColors.primaryColor,
-      leading: enableBack? _backButton : leading,
+      leading: enableBack ? _backButton : leading,
       centerTitle: centerTitle,
-      title: appBarTitle ?? Text(
-          titleText,
-          style: const TextStyle(
+      title: appBarTitle ??
+          Text(
+            titleText,
+            style: const TextStyle(
               fontWeight: FontWeight.w500,
-              color: Colors.white
-          )
-      ),
+              color: Colors.white,
+            ),
+          ),
       actions: actions,
     );
   }

@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:healty_ways/model/patient/medications.dart';
 import 'package:healty_ways/resources/app_colors.dart';
+import 'package:intl/intl.dart'; // For date formatting
 
 class MedicationCard extends StatelessWidget {
-  final String status;
-  final String medicationName;
-  final String dosage;
-  final String doctorName;
-  final String time;
+  final Medications medication; // Use the Medications model
+  final VoidCallback onToggle; // Callback for toggling isTaken
 
   const MedicationCard({
     super.key,
-    required this.status,
-    required this.medicationName,
-    required this.dosage,
-    required this.doctorName,
-    required this.time,
+    required this.medication,
+    required this.onToggle, // Add callback
   });
 
   @override
   Widget build(BuildContext context) {
+    // Format the DateTime to a readable string
+    String formattedTime = DateFormat('h:mm a').format(medication.time);
+
+    // Determine the status based on isTaken
+    String status = medication.isTaken ? 'Taken' : 'Pending';
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -33,16 +35,16 @@ class MedicationCard extends StatelessWidget {
             const SizedBox(height: 5),
             // Medication Name
             Text(
-              medicationName,
+              medication.medicationName,
               style: GoogleFonts.roboto(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 4),
+            // const SizedBox(height: 4),
             // Dosage
             Text(
-              dosage,
+              '${medication.dosage} ${medication.dosageType}', // Include dosageType
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
@@ -57,33 +59,37 @@ class MedicationCard extends StatelessWidget {
                   size: 16,
                   color: Colors.black.withOpacity(0.7),
                 ),
-                SizedBox(
-                  width: 5,
-                ),
+                const SizedBox(width: 5),
                 Text(
-                  time,
+                  formattedTime, // Use formatted time
                   style: TextStyle(
-                      fontSize: 12, color: Colors.black.withOpacity(0.7)),
-                ),
+                    fontSize: 12,
+                    color: Colors.black.withOpacity(0.7),
+                  ),
+                )
               ],
             ),
-            const SizedBox(height: 5),
-            Divider(),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              decoration: BoxDecoration(
+            // const SizedBox(height: 5),
+            const Divider(),
+            InkWell(
+              onTap: onToggle,
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                decoration: BoxDecoration(
                   color: status == 'Taken'
                       ? AppColors.greenColor
                       : AppColors.redColor,
-                  borderRadius: BorderRadius.circular(5)),
-              child: Center(
-                child: Text(
-                  status,
-                  style: TextStyle(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Center(
+                  child: Text(
+                    status,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
