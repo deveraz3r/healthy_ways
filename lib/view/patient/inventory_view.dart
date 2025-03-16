@@ -23,8 +23,7 @@ class InventoryView extends StatelessWidget {
         actions: [
           InkWell(
             onTap: () {
-              // Navigate to the request medication page
-              Get.toNamed(RouteName.patientRequestMedication);
+              Get.toNamed(RouteName.patientInventoryAddItem);
             },
             child: const Padding(
               padding: EdgeInsets.all(15),

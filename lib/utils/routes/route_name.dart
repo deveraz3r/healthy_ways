@@ -7,6 +7,7 @@ class RouteName {
   //------------------- Patient -------------------
   static const String patientHome = "/patientHome";
   static const String patientInventory = "/patientInventory";
+  static const String patientInventoryAddItem = "/patientInventoryAddItem";
   static const String patientPharmacy = "/patientPharmacy";
   static const String patientDliveryStatus = "/patientDliveryStatus";
   static const String patientRequestMedication = "/patientRequestMedication";

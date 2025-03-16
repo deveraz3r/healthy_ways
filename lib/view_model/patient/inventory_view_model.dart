@@ -18,24 +18,23 @@ class InventoryViewModel extends GetxController {
       Medicine(
         name: 'Panadol Extra',
         formula: '100 mg',
-        quantity: '3 Packs',
-        isInStock: true,
-        imageUrl: 'https://example.com/panadol.png', // Replace with actual URL
+        quantityType: 'Packs',
+        quantity: 3,
+        imageUrl: 'https://example.com/panadol.png',
       ),
       Medicine(
         name: 'Paracetamol',
         formula: '50 mg',
-        quantity: '5 Packs',
-        isInStock: false,
+        quantityType: 'Packs',
+        quantity: 3,
         imageUrl: null, // No image URL
       ),
       Medicine(
         name: 'Ibuprofen',
         formula: '500 mg',
-        quantity: '1 Pack',
-        isInStock: true,
-        imageUrl:
-            'https://example.com/ibuprofen.png', // Replace with actual URL
+        quantityType: 'Tablets',
+        quantity: 3,
+        imageUrl: 'https://example.com/ibuprofen.png',
       ),
     ];
 

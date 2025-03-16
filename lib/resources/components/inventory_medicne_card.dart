@@ -11,6 +11,8 @@ class InventoryMedicneCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isInStock = medicine.quantity <= 0 ? false : true;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -64,7 +66,7 @@ class InventoryMedicneCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      medicine.quantity,
+                      "${medicine.quantity.toString()} ${medicine.quantityType}",
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[600],
@@ -83,15 +85,15 @@ class InventoryMedicneCard extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: medicine.isInStock ? Colors.green : Colors.red,
+                  color: isInStock ? Colors.green : Colors.red,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 8),
               Text(
-                medicine.isInStock ? 'In Stock' : 'Out of Stock',
+                isInStock ? 'In Stock' : 'Out of Stock',
                 style: TextStyle(
-                  color: medicine.isInStock ? Colors.green : Colors.red,
+                  color: isInStock ? Colors.green : Colors.red,
                   fontWeight: FontWeight.w500,
                 ),
               ),
