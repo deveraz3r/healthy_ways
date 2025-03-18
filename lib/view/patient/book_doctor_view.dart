@@ -1,129 +1,81 @@
+import 'package:healty_ways/resources/components/doctor_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/patient/doctors_view_model.dart';
 
 class BookDoctorView extends StatelessWidget {
   const BookDoctorView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final DoctorViewModel doctorViewModel = Get.put(DoctorViewModel());
+    final TextEditingController searchController = TextEditingController();
+
     return Scaffold(
       appBar: ReusableAppBar(
         titleText: "Doctors",
-        // enableBack: true,
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(
+          icon: const Icon(
             Icons.home,
             color: Colors.white,
           ),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          DoctorCard(
-            name: 'Dr John',
-            profilePhoto: "assets/images/profile.jpg",
-            rating: '★★★★★',
-            specialty: 'Psychiatrist | MBBS',
-          ),
-          SizedBox(height: 16),
-          DoctorCard(
-            name: 'Dr John',
-            profilePhoto: "assets/images/profile.jpg",
-            rating: '★★★★★',
-            specialty: 'Psychiatrist | MBBS',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class DoctorCard extends StatelessWidget {
-  final String name;
-  final String profilePhoto;
-  final String rating;
-  final String specialty;
-
-  const DoctorCard({
-    super.key,
-    required this.name,
-    required this.profilePhoto,
-    required this.rating,
-    required this.specialty,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
-          children: [
-            // Profile Photo (Circular)
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage(profilePhoto),
-                  fit: BoxFit.cover,
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by name or specialty...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
+              onChanged: (value) {
+                // Update the search query
+                doctorViewModel.searchQuery.value = value;
+              },
             ),
-            const SizedBox(width: 16),
-            // Doctor Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Doctor Name and Rating
-                  Row(
+          ),
+          // List of Doctors
+          Expanded(
+            child: Obx(() {
+              // Filter doctors based on the search query
+              final filteredDoctors = doctorViewModel.doctors
+                  .where((doctor) =>
+                      doctor.name.toLowerCase().contains(
+                          doctorViewModel.searchQuery.value.toLowerCase()) ||
+                      doctor.specialty.toLowerCase().contains(
+                          doctorViewModel.searchQuery.value.toLowerCase()))
+                  .toList();
+
+              return ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                children: filteredDoctors.map((doctor) {
+                  return Column(
                     children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      DoctorCard(
+                        doctor: doctor,
+                        onTap: () {
+                          // Navigate to details view with the selected doctor
+                          Get.toNamed(
+                            RouteName.patientBookDoctorDetails,
+                            arguments: doctor, // Pass the doctor object
+                          );
+                        },
                       ),
-                      const Spacer(),
-                      Text(
-                        rating,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.amber[600],
-                        ),
-                      ),
+                      const SizedBox(height: 16),
                     ],
-                  ),
-                  const SizedBox(height: 2),
-                  // Specialty
-                  Text(
-                    specialty,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Book Appointment Button
-                  ReuseableElevatedbutton(
-                    buttonName: "Book Appointment",
-                    onPressed: () {
-                      Get.toNamed(RouteName.patientBookDoctorDetails);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                  );
+                }).toList(),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }

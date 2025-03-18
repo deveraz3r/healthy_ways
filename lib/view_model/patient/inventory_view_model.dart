@@ -19,7 +19,7 @@ class InventoryViewModel extends GetxController {
         name: 'Panadol Extra',
         formula: '100 mg',
         quantityType: 'Packs',
-        quantity: 3,
+        quantity: 0,
         imageUrl: 'https://example.com/panadol.png',
       ),
       Medicine(

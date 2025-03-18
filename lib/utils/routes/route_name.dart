@@ -11,6 +11,8 @@ class RouteName {
   static const String patientPharmacy = "/patientPharmacy";
   static const String patientDliveryStatus = "/patientDliveryStatus";
   static const String patientRequestMedication = "/patientRequestMedication";
+  static const String patientRequestMedicineCheckout =
+      "/patientRequestMedicineCheckout";
   static const String patientMedicationsHistory = "/patientMedicationsHistory";
   static const String patientAppointmentHistory = "/patientAppointmentHistory";
   static const String patientAppointmentReport = "/patientAppointmentReport";

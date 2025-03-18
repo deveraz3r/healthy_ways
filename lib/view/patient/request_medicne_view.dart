@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/patient/medicine_request_view_model.dart';
+import 'package:healty_ways/model/patient/medicine_request.dart';
 
 class RequestMedicneView extends StatefulWidget {
   @override
@@ -6,7 +10,12 @@ class RequestMedicneView extends StatefulWidget {
 }
 
 class _RequestMedicneViewState extends State<RequestMedicneView> {
-  String selectedPaymentMethod = "Payoneer"; // Default selected payment
+  final MedicineRequestViewModel viewModel =
+      Get.put(MedicineRequestViewModel());
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _formulaController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -23,39 +32,102 @@ class _RequestMedicneViewState extends State<RequestMedicneView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Medicine Details Card
+            // List of Medicine Cards
+            Expanded(
+              child: Obx(() {
+                return ListView.builder(
+                  itemCount: viewModel.medicineRequests.length,
+                  itemBuilder: (context, index) {
+                    final request = viewModel.medicineRequests[index];
+                    return Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Medicine ${index + 1}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Text("Name: ${request.name}"),
+                            Text("Formula: ${request.formula}"),
+                            Text("Quantity: ${request.quantity}"),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }),
+            ),
+            SizedBox(height: 16),
+
+            // Add Medicine Card
             Card(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Medicine Details",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      "Add Medicine",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 12),
-
-                    // Medicine Name Input
-                    buildTextField("Medicine Name", "Medicine name"),
+                    buildTextField(
+                      "Medicine Name",
+                      "Medicine name",
+                      _nameController,
+                      null,
+                    ),
                     SizedBox(height: 12),
-
-                    // Formula Input
-                    buildTextField("Formula", "Formula"),
+                    buildTextField(
+                      "Formula",
+                      "Formula",
+                      _formulaController,
+                      null,
+                    ),
                     SizedBox(height: 12),
-
-                    // Quantity Input
-                    buildTextField("Quantity", "quantity e.g. 2"),
+                    buildTextField(
+                      "Quantity",
+                      "Quantity e.g. 2",
+                      _quantityController,
+                      TextInputType.number,
+                    ),
                     SizedBox(height: 8),
-
-                    // Add New Button
                     TextButton(
-                      onPressed: () {},
-                      child: Text("+ Add new",
-                          style: TextStyle(color: Colors.teal)),
+                      onPressed: () {
+                        // Add new medicine request
+                        final request = MedicineRequest(
+                          name: _nameController.text,
+                          formula: _formulaController.text,
+                          quantity: int.parse(_quantityController.text),
+                        );
+                        viewModel.addMedicineRequest(request);
+
+                        // Clear input fields
+                        _nameController.clear();
+                        _formulaController.clear();
+                        _quantityController.clear();
+                      },
+                      child: Text(
+                        "+ Add new",
+                        style: TextStyle(color: Colors.teal),
+                      ),
                     ),
                   ],
                 ),
@@ -63,36 +135,28 @@ class _RequestMedicneViewState extends State<RequestMedicneView> {
             ),
             SizedBox(height: 16),
 
-            // Payment Method Section
-            Text(
-              "Payment Method:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: [
-                buildRadioOption("Payoneer"),
-                buildRadioOption("Paypal"),
-              ],
-            ),
-            SizedBox(height: 24),
-
-            // Continue Button
+            // Checkout Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Navigate to CheckoutView
+                  Get.toNamed(RouteName.patientRequestMedicineCheckout);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   padding: EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: Text(
-                  "CONTINUE",
+                  "CHECKOUT",
                   style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold),
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -103,38 +167,26 @@ class _RequestMedicneViewState extends State<RequestMedicneView> {
   }
 
   // Function to Build a Custom Text Field
-  Widget buildTextField(String label, String hint) {
+  Widget buildTextField(
+    String label,
+    String hint,
+    TextEditingController controller,
+    TextInputType? inputType,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
         SizedBox(height: 6),
         TextField(
+          controller: controller,
+          keyboardType: inputType,
           decoration: InputDecoration(
             hintText: hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           ),
         ),
-      ],
-    );
-  }
-
-  // Function to Build a Radio Button Option
-  Widget buildRadioOption(String paymentMethod) {
-    return Row(
-      children: [
-        Radio(
-          value: paymentMethod,
-          groupValue: selectedPaymentMethod,
-          onChanged: (value) {
-            setState(() {
-              selectedPaymentMethod = value.toString();
-            });
-          },
-          activeColor: Colors.teal,
-        ),
-        Text(paymentMethod),
       ],
     );
   }
