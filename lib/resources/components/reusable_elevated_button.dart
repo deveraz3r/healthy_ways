@@ -10,12 +10,14 @@ class ReuseableElevatedbutton extends StatelessWidget {
     this.margin,
     this.textColor = Colors.white,
     this.padding,
+    this.borderColor,
   });
 
   final String buttonName;
   final VoidCallback? onPressed;
   final double width;
   final Color color;
+  final Color? borderColor;
   final EdgeInsets? margin;
   final Color textColor;
   final EdgeInsets? padding;
@@ -24,21 +26,26 @@ class ReuseableElevatedbutton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: width,
-      height: 30,
+      height: 45,
       padding: padding,
       margin: margin ?? const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: color,
-      ),
+          borderRadius: BorderRadius.circular(8),
+          color: color,
+          border: Border.all(width: 1, color: borderColor ?? color)),
       child: InkWell(
-          onTap: onPressed ?? () {},
-          child: Center(
-              child: Text(
+        onTap: onPressed ?? () {},
+        child: Center(
+          child: Text(
             buttonName,
             style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: textColor),
-          ))),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

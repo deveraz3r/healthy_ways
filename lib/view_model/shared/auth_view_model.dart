@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:healty_ways/view_model/patient/patient_profile_view_model.dart';
 
 class AuthViewModel extends GetxController {
+  var selectedRole = 'Doctor'.obs;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ProfileViewModel _profileViewModel = Get.put(ProfileViewModel());
 
