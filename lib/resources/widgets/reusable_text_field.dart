@@ -6,6 +6,14 @@ class ReusableTextField extends StatelessWidget {
   final TextEditingController? controller;
   final TextInputType? keyboardType;
   final Function(String)? onChanged;
+  final Widget? prefixIcon; // Leading icon/action
+  final Widget? suffixIcon; // Trailing icon/button
+  final double borderRadius;
+  final EdgeInsetsGeometry padding;
+  final Color? fillColor;
+  final Color? borderColor;
+  final TextStyle? hintStyle;
+  final TextStyle? textStyle;
 
   const ReusableTextField({
     Key? key,
@@ -14,6 +22,14 @@ class ReusableTextField extends StatelessWidget {
     this.controller,
     this.keyboardType,
     this.onChanged,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.borderRadius = 5.0,
+    this.padding = const EdgeInsets.all(12.0),
+    this.fillColor,
+    this.borderColor,
+    this.hintStyle,
+    this.textStyle,
   }) : super(key: key);
 
   @override
@@ -23,13 +39,33 @@ class ReusableTextField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       onChanged: onChanged,
+      style: textStyle,
       decoration: InputDecoration(
         hintText: hintText,
+        hintStyle: hintStyle,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: fillColor ?? Colors.white,
+        contentPadding: padding,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(borderRadius),
+          borderSide: BorderSide(
+            color: borderColor ?? Colors.grey,
+          ),
         ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
+          borderSide: BorderSide(
+            color: borderColor ?? Colors.grey,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadius),
+          borderSide: BorderSide(
+            color: borderColor ?? Colors.blue,
+          ),
+        ),
+        prefixIcon: prefixIcon, // Leading action/icon
+        suffixIcon: suffixIcon, // Trailing action/button
       ),
     );
   }

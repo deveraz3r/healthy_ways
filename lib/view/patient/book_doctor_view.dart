@@ -1,4 +1,5 @@
 import 'package:healty_ways/resources/components/doctor_card.dart';
+import 'package:healty_ways/resources/widgets/reusable_text_field.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/patient/doctors_view_model.dart';
 
@@ -25,20 +26,11 @@ class BookDoctorView extends StatelessWidget {
         children: [
           // Search Bar
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Search by name or specialty...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onChanged: (value) {
-                // Update the search query
-                doctorViewModel.searchQuery.value = value;
-              },
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ReusableTextField(
+              borderRadius: 10,
+              hintText: 'Search by name or specialty...',
+              prefixIcon: const Icon(Icons.search),
             ),
           ),
           // List of Doctors

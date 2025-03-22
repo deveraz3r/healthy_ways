@@ -5,6 +5,11 @@ import 'package:healty_ways/view_model/shared/auth_view_model.dart';
 
 class SignupView extends StatelessWidget {
   final AuthViewModel _authViewModel = Get.put(AuthViewModel());
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  final RxBool _obscurePassword = true.obs;
+  final RxBool _obscureConfirmPassword = true.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -77,33 +82,63 @@ class SignupView extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                // Name Input
+                // Name Input with Leading Icon
                 ReusableTextField(
                   hintText: "Full Name",
+                  prefixIcon: Icon(Icons.person, color: Colors.grey),
                 ),
 
                 const SizedBox(height: 10),
 
-                // Email Input
+                // Email Input with Leading Icon
                 ReusableTextField(
                   hintText: "Email",
                   keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icon(Icons.email, color: Colors.grey),
                 ),
 
                 const SizedBox(height: 10),
 
-                // Password Input
-                ReusableTextField(
-                  hintText: "Password",
-                  obscureText: true,
+                // Password Input with Leading Icon and Trailing Visibility Toggle
+                Obx(
+                  () => ReusableTextField(
+                    hintText: "Password",
+                    obscureText: _obscurePassword.value,
+                    prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        _obscurePassword.toggle();
+                      },
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 10),
 
-                // Confirm Password Input
-                ReusableTextField(
-                  hintText: "Confirm Password",
-                  obscureText: true,
+                // Confirm Password Input with Leading Icon and Trailing Visibility Toggle
+                Obx(
+                  () => ReusableTextField(
+                    hintText: "Confirm Password",
+                    obscureText: _obscureConfirmPassword.value,
+                    prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        _obscureConfirmPassword.toggle();
+                      },
+                    ),
+                  ),
                 ),
 
                 const SizedBox(height: 20),

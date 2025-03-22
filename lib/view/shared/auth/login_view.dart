@@ -1,13 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:healty_ways/resources/app_colors.dart';
-import 'package:healty_ways/resources/components/reusable_elevated_button.dart';
+import 'package:healty_ways/resources/widgets/reusable_text_field.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/shared/auth_view_model.dart';
 
 class LoginView extends StatelessWidget {
   final AuthViewModel _authViewModel = Get.put(AuthViewModel());
+  final RxBool _obscurePassword = true.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -81,29 +79,51 @@ class LoginView extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Email Input
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: "Doctor134@gmail.com",
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
+                ReusableTextField(
+                  hintText: "Email",
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icon(Icons.email, color: Colors.grey),
+                ),
+                // TextField(
+                //   decoration: InputDecoration(
+                //     filled: true,
+                //     fillColor: Colors.white,
+                //     border: OutlineInputBorder(
+                //       borderRadius: BorderRadius.circular(10),
+                //     ),
+                //   ),
+                // ),
+
+                const SizedBox(height: 10),
+
+                // Password Input
+                Obx(
+                  () => ReusableTextField(
+                    hintText: "Password",
+                    obscureText: _obscurePassword.value,
+                    prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        _obscurePassword.toggle();
+                      },
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 5),
-
-                // Password Input
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
+                // TextField(
+                //   obscureText: true,
+                //   decoration: InputDecoration(
+                //     filled: true,
+                //     fillColor: Colors.white,
+                //     border: OutlineInputBorder(
+                //         borderRadius: BorderRadius.circular(10)),
+                //   ),
+                // ),
 
                 const SizedBox(height: 20),
 

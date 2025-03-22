@@ -121,6 +121,28 @@ class HomeView extends StatelessWidget {
           },
           color: AppColors.purpleColor,
         ),
+        HomeButton(
+          title: 'Medication Adherence',
+          onTap: () {
+            Get.toNamed(RouteName.patientMedicationsHistory);
+          },
+          color: AppColors.orangeColor,
+        ),
+        HomeButton(
+          title: 'Diary Entries',
+          onTap: () {},
+          color: AppColors.primaryColor,
+        ),
+        HomeButton(
+          title: 'Health Tracker',
+          onTap: () {},
+          color: AppColors.blueColor,
+        ),
+        HomeButton(
+          title: 'Lab Reports',
+          onTap: () {},
+          color: AppColors.purpleColor,
+        ),
       ],
     );
   }

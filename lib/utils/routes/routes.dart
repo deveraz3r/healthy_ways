@@ -1,4 +1,4 @@
-import 'package:healty_ways/view/patient/appointment_history_view.dart';
+import 'package:healty_ways/view/shared/appointment_history_view.dart';
 import 'package:healty_ways/view/patient/appointment_report_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_details_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_view.dart';
