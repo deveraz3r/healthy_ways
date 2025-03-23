@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:healty_ways/resources/app_colors.dart';
-import 'package:healty_ways/resources/components/reusable_app_bar.dart';
+import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:intl/intl.dart';
 
 // Model

@@ -20,6 +20,15 @@ class RouteName {
   static const String patientBookDoctorDetails = "/patientBookDoctorDetails";
 
   //------------------- Doctor -------------------
+  static const String doctorHomeView = "/doctorHomeView";
+  static const String doctorAppointmentsView = "/doctorAppointmentsView";
+  static const String doctorAppointmentHistoryDetailsView =
+      "/doctorAppointmentHistoryDetailsView";
+  static const String doctorAssignedPatientsView =
+      "/doctorAssignedPatientsView";
+  static const String doctorAssignedPatientDetailsView =
+      "/doctorAssignedPatientDetailsView";
+  static const String doctorProfileView = "/doctorProfileView";
 
   //------------------- Pharmacy -------------------
 }

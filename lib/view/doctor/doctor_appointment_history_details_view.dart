@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 
-class AppointmentReportView extends StatelessWidget {
+class DoctorAppointmentHistoryDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,19 +14,6 @@ class AppointmentReportView extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Medicine Cards
-            MedicineCard(
-              medicineName: "Panadol 50mg",
-              doctorName: "Dr Junaid",
-              specialty: "Sergion",
-            ),
-            MedicineCard(
-              medicineName: "Arinac Forte 10mg",
-              doctorName: "Dr Najam",
-              specialty: "Gynachologist",
-            ),
-            SizedBox(height: 16),
-
             // Report Section
             ReportCard(),
           ],

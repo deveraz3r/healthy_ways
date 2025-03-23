@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:healty_ways/model/patient/appointment.dart';
+import 'package:healty_ways/model/shared/appointment.dart';
 
 class AppointmentViewModel extends GetxController {
   // List of appointments (reactive)
@@ -21,15 +21,17 @@ class AppointmentViewModel extends GetxController {
         time: DateTime(2023, 10, 15, 10, 0), // October 15, 2023, 10:00 AM
         state: AppointmentState.completed,
         appointmentId: 1,
+        profilePhoto: null,
         specality: "PHD",
         qualification: 'Cardiologist', // Example qualification
       ),
       Appointment(
         patientEmail: 'patient1@example.com',
         doctorEmail: 'doctor2@example.com',
-        time: DateTime(2023, 10, 15, 14, 0), // October 15, 2023, 2:00 PM
+        time: DateTime(2023, 10, 15, 14, 0), // OctoberS 15, 2023, 2:00 PM
         state: AppointmentState.missed,
         appointmentId: 2,
+        profilePhoto: null,
         specality: "MBBS",
         qualification: 'General Physician', // Example qualification
       ),
@@ -39,6 +41,7 @@ class AppointmentViewModel extends GetxController {
         time: DateTime(2023, 10, 16, 9, 0), // October 16, 2023, 9:00 AM
         state: AppointmentState.upcoming,
         appointmentId: 3,
+        profilePhoto: null,
         specality: "MBBS",
         qualification: 'Neurologist', // Example qualification
       ),

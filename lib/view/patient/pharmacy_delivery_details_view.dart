@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healty_ways/model/patient/pharmacy_delivery.dart';
-import 'package:healty_ways/resources/components/reusable_app_bar.dart';
+import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/view_model/patient/pharmacy_delivery_view_model.dart';
 import 'package:intl/intl.dart';
 

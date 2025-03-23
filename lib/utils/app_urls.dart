@@ -25,8 +25,8 @@ export 'package:healty_ways/utils/routes/routes.dart';
 //models
 
 //components
-export 'package:healty_ways/resources/components/reusable_app_bar.dart';
-export 'package:healty_ways/resources/components/reusable_elevated_button.dart';
+export 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
+export 'package:healty_ways/resources/widgets/reusable_elevated_button.dart';
 
 //packages
 export 'package:get/get.dart';

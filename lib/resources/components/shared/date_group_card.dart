@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:healty_ways/model/patient/pharmacy_delivery.dart';
 import 'package:healty_ways/resources/app_colors.dart';
 import 'package:intl/intl.dart';
-import 'delivery_item_card.dart'; // Import the DeliveryItemCard component
+import '../patient/delivery_item_card.dart'; // Import the DeliveryItemCard component
 
 class DateGroupCard extends StatelessWidget {
   final PharmacyDelivery delivery;

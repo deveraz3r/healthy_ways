@@ -1,4 +1,6 @@
-import './../../utils/app_urls.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../utils/app_urls.dart';
 
 class ReusableAppBar extends StatelessWidget implements PreferredSizeWidget {
   ReusableAppBar({
@@ -39,7 +41,7 @@ class ReusableAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: appBarTitle ??
           Text(
             titleText,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w500,
               color: Colors.white,
             ),

@@ -12,6 +12,7 @@ class Appointment {
   final int appointmentId;
   final String qualification;
   final String specality;
+  final String? profilePhoto;
 
   Appointment({
     required this.patientEmail,
@@ -21,5 +22,6 @@ class Appointment {
     required this.appointmentId,
     required this.qualification,
     required this.specality,
+    this.profilePhoto,
   });
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healty_ways/resources/components/reusable_app_bar.dart';
+import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/utils/routes/route_name.dart';
 import 'package:healty_ways/view_model/patient/pharmacy_delivery_view_model.dart';
-import 'package:healty_ways/resources/components/date_group_card.dart';
+import 'package:healty_ways/resources/components/shared/date_group_card.dart';
 
 class PharmacyView extends StatelessWidget {
   PharmacyView({super.key});

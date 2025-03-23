@@ -132,7 +132,8 @@ class LoginView extends StatelessWidget {
                   buttonName: "Sign In",
                   color: Colors.black,
                   onPressed: () {
-                    Get.offAllNamed(RouteName.patientHome);
+                    // Get.offAllNamed(RouteName.patientHome);
+                    Get.offAllNamed(RouteName.doctorHomeView);
                   },
                 ),
 

@@ -1,11 +1,11 @@
 import 'package:google_fonts/google_fonts.dart';
-import 'package:healty_ways/resources/components/home_button.dart';
-import 'package:healty_ways/resources/components/medication_card.dart';
-import 'package:healty_ways/resources/components/home_profile_card.dart';
+import 'package:healty_ways/resources/components/shared/home_button.dart';
+import 'package:healty_ways/resources/components/patient/medication_card.dart';
+import 'package:healty_ways/resources/components/patient/home_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/patient/medications_view_model.dart';
 import 'package:intl/intl.dart';
-import 'package:healty_ways/resources/components/build_calendar.dart';
+import 'package:healty_ways/resources/components/patient/build_calendar.dart';
 
 class HomeView extends StatelessWidget {
   final MedicationsViewModel medicationsViewModel =
@@ -15,7 +15,7 @@ class HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        appBarTitle: HomeProfileCard(),
+        appBarTitle: PatientHomeProfileCard(),
         titleText: "",
         // leading: IconButton(
         //   icon: const Icon(

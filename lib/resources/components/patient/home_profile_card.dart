@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healty_ways/view_model/patient/patient_profile_view_model.dart';
 
-class HomeProfileCard extends StatelessWidget {
-  HomeProfileCard({super.key});
+class PatientHomeProfileCard extends StatelessWidget {
+  PatientHomeProfileCard({super.key});
 
   final ProfileViewModel _profileViewModel = Get.put(ProfileViewModel());
 

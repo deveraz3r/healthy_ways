@@ -1,5 +1,5 @@
 import 'package:healty_ways/view_model/patient/inventory_view_model.dart';
-import 'package:healty_ways/resources/components/inventory_medicne_card.dart';
+import 'package:healty_ways/resources/components/patient/inventory_medicne_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 
 class InventoryView extends StatelessWidget {

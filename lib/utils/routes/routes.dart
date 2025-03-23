@@ -1,4 +1,10 @@
-import 'package:healty_ways/view/shared/appointment_history_view.dart';
+import 'package:healty_ways/view/doctor/doctor_appointment_history_details_view.dart';
+import 'package:healty_ways/view/doctor/doctor_appointments_view.dart';
+import 'package:healty_ways/view/doctor/doctor_assigned_patient_details_view.dart';
+import 'package:healty_ways/view/doctor/doctor_assigned_patients_view.dart';
+import 'package:healty_ways/view/doctor/doctor_home_view.dart';
+import 'package:healty_ways/view/doctor/doctor_profile_view.dart';
+import 'package:healty_ways/view/patient/appointment_history_view.dart';
 import 'package:healty_ways/view/patient/appointment_report_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_details_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_view.dart';
@@ -83,6 +89,31 @@ class Routes {
         ),
 
         //------------------- Doctor -------------------
+
+        GetPage(
+          name: RouteName.doctorHomeView,
+          page: () => DoctorHomeView(),
+        ),
+        GetPage(
+          name: RouteName.doctorAppointmentsView,
+          page: () => DoctorAppointmentsView(),
+        ),
+        GetPage(
+          name: RouteName.doctorAppointmentHistoryDetailsView,
+          page: () => DoctorAppointmentHistoryDetailsView(),
+        ),
+        GetPage(
+          name: RouteName.doctorAssignedPatientsView,
+          page: () => DoctorAssignedPatientsView(),
+        ),
+        GetPage(
+          name: RouteName.doctorAssignedPatientDetailsView,
+          page: () => DoctorAssignedPatientDetailsView(),
+        ),
+        GetPage(
+          name: RouteName.doctorProfileView,
+          page: () => DoctorProfileView(),
+        ),
 
         //------------------- Pharmacy -------------------
       ];

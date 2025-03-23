@@ -1,7 +1,7 @@
-import 'package:healty_ways/model/patient/appointment.dart';
-import 'package:healty_ways/resources/components/appointment_card.dart';
+import 'package:healty_ways/model/shared/appointment.dart';
+import 'package:healty_ways/resources/components/patient/appointment_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/patient/appointments_view_model.dart';
+import 'package:healty_ways/view_model/shared/appointments_view_model.dart';
 import 'package:intl/intl.dart';
 
 class AppointmentHistoryView extends StatelessWidget {

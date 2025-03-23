@@ -1,4 +1,4 @@
-import 'package:healty_ways/resources/components/doctor_card.dart';
+import 'package:healty_ways/resources/components/patient/doctor_card.dart';
 import 'package:healty_ways/resources/widgets/reusable_text_field.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/patient/doctors_view_model.dart';

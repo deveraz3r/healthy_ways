@@ -1,4 +1,4 @@
-import './../../utils/app_urls.dart';
+import '../../utils/app_urls.dart';
 
 class ReuseableElevatedbutton extends StatelessWidget {
   const ReuseableElevatedbutton({

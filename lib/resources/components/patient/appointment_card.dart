@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/patient/appointment.dart';
+import 'package:healty_ways/model/shared/appointment.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:intl/intl.dart'; // For time formatting
 
