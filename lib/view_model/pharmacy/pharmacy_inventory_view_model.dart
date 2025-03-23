@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:healty_ways/model/shared/inventory_medicne.dart';
 
-class InventoryViewModel extends GetxController {
+class PharmacyInventoryViewModel extends GetxController {
   // List of medicines (reactive)
   final RxList<Medicine> medicines = <Medicine>[].obs;
 

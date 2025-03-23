@@ -33,7 +33,7 @@ class DoctorHomeProfileCard extends StatelessWidget {
               children: [
                 Text(
                   _profileViewModel.profile?.name ??
-                      'Guest', // Display name or fallback to 'Guest'
+                      'Junaid Ahmed', // Display name or fallback to 'Guest'
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -41,7 +41,7 @@ class DoctorHomeProfileCard extends StatelessWidget {
                   ),
                 ),
                 const Text(
-                  'Patient',
+                  'Doctor',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white,

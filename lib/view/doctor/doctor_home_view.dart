@@ -13,7 +13,9 @@ class DoctorHomeView extends StatelessWidget {
         titleText: "",
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Get.toNamed(RouteName.chatView);
+            },
             icon: Icon(
               Icons.chat_rounded,
               color: Colors.white,

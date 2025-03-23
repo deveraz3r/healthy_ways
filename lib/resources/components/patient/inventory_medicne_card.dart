@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:healty_ways/model/patient/inventory_medicne.dart';
+import 'package:healty_ways/model/shared/inventory_medicne.dart';
 
 class InventoryMedicneCard extends StatelessWidget {
   final Medicine medicine;

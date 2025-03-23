@@ -15,8 +15,15 @@ import 'package:healty_ways/view/patient/inventory_view.dart';
 import 'package:healty_ways/view/patient/medication_history_view.dart';
 import 'package:healty_ways/view/patient/pharmacy_delivery_view.dart';
 import 'package:healty_ways/view/patient/request_medicne_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_home_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_inventory_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_lab_records.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_orders_request_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_delivery_status_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_upload_lab_report_view.dart';
 import 'package:healty_ways/view/shared/auth/login_view.dart';
 import 'package:healty_ways/view/shared/auth/signup_view.dart';
+import 'package:healty_ways/view/shared/chat_view.dart';
 import 'package:healty_ways/view/shared/splash_view.dart';
 
 import '/utils/app_urls.dart';
@@ -40,6 +47,10 @@ class Routes {
         GetPage(
           name: RouteName.login,
           page: () => LoginView(),
+        ),
+        GetPage(
+          name: RouteName.chatView,
+          page: () => ChatView(),
         ),
 
         //------------------- Patient -------------------
@@ -116,5 +127,29 @@ class Routes {
         ),
 
         //------------------- Pharmacy -------------------
+        GetPage(
+          name: RouteName.pharmacyHomeView,
+          page: () => PharmacyHomeView(),
+        ),
+        GetPage(
+          name: RouteName.pharmacyInventoryView,
+          page: () => PharmacyInventoryView(),
+        ),
+        GetPage(
+          name: RouteName.pharmacyLabRecords,
+          page: () => PharmacyLabRecords(),
+        ),
+        GetPage(
+          name: RouteName.pharmacyOrdersRequestView,
+          page: () => PharmacyOrdersRequestView(),
+        ),
+        GetPage(
+          name: RouteName.pharmacyDeliveryStatusView,
+          page: () => PharmacyDeliveryStatusView(),
+        ),
+        GetPage(
+          name: RouteName.pharmacyUploadLabReportView,
+          page: () => PharmacyUploadLabReportView(),
+        ),
       ];
 }

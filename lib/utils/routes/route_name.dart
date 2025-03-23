@@ -3,6 +3,7 @@ class RouteName {
   static const String splash = "/";
   static const String login = "/login";
   static const String signup = "/signup";
+  static const String chatView = "/chatView";
 
   //------------------- Patient -------------------
   static const String patientHome = "/patientHome";
@@ -31,4 +32,12 @@ class RouteName {
   static const String doctorProfileView = "/doctorProfileView";
 
   //------------------- Pharmacy -------------------
+  static const String pharmacyHomeView = "/pharmacyHomeView";
+  static const String pharmacyInventoryView = "/pharmacyInventoryView";
+  static const String pharmacyLabRecords = "/pharmacyLabRecords";
+  static const String pharmacyOrdersRequestView = "/pharmacyOrdersRequestView";
+  static const String pharmacyDeliveryStatusView =
+      "/pharmacyDeliveryStatusView";
+  static const String pharmacyUploadLabReportView =
+      "/pharmacyUploadLabReportView";
 }
