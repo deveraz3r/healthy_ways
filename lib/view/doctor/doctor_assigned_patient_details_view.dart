@@ -83,7 +83,7 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
                 () => ListView(
                   children: controller.medications.entries.map((entry) {
                     String date = entry.key;
-                    List<Medication> meds = entry.value;
+                    List<MedicationX> meds = entry.value;
                     int total = meds.length;
                     int takenCount = meds.where((m) => m.isTaken).length;
 
@@ -138,7 +138,7 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
 }
 
 class MedicationCard extends StatelessWidget {
-  final Medication medication;
+  final MedicationX medication;
 
   const MedicationCard({required this.medication, super.key});
 
