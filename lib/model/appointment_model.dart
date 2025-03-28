@@ -8,7 +8,7 @@ class AppointmentModel {
   final String doctorId;
   final String patientId;
   final DateTime time;
-  final AppointmentStatus status;
+  AppointmentStatus status;
 
   AppointmentModel({
     required this.doctorId,

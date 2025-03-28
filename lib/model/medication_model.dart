@@ -5,7 +5,7 @@ class MedicationModel {
   final DateTime assignedTime;
   final String assignedTo;
   final String assignedBy;
-  final bool isTaken;
+  bool isTaken;
 
   MedicationModel({
     required this.id,
