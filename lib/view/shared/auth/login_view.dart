@@ -1,7 +1,7 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healty_ways/resources/widgets/reusable_text_field.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/shared/auth_view_model.dart';
+import 'package:healty_ways/view_model/auth_view_model.dart';
 
 class LoginView extends StatelessWidget {
   final AuthViewModel _authViewModel = Get.put(AuthViewModel());
