@@ -1,13 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:healty_ways/model/patient/doctor.dart';
+import 'package:healty_ways/model/doctor_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
+import 'package:intl/intl.dart';
 
 class BookDoctorDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // Retrieve the passed doctor object
-    final Doctor doctor = Get.arguments as Doctor;
+    // Retrieve the passed doctor object with error handling
+    final DoctorModel? doctor =
+        Get.arguments is DoctorModel ? Get.arguments as DoctorModel : null;
+
+    if (doctor == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Error')),
+        body: Center(child: Text('Doctor information not available')),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -22,15 +30,18 @@ class BookDoctorDetailsView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Doctor Profile Photo
+            // Doctor Profile Photo with fallback
             CircleAvatar(
               radius: 50,
-              backgroundImage: AssetImage(doctor.profilePhoto),
+              backgroundImage: doctor.profileImage != null
+                  ? NetworkImage(doctor.profileImage!)
+                  : AssetImage('assets/images/default_doctor.png')
+                      as ImageProvider,
             ),
             SizedBox(height: 10),
             // Doctor Name
             Text(
-              doctor.name,
+              doctor.fullName,
               style: GoogleFonts.manrope(
                   fontSize: 22, fontWeight: FontWeight.bold),
             ),
@@ -41,7 +52,7 @@ class BookDoctorDetailsView extends StatelessWidget {
               children: [
                 _infoTile('Qualification', doctor.qualification),
                 _infoTile('Specialty', doctor.specialty),
-                _infoTile('Rating', '${doctor.rating}'),
+                _infoTile('Rating', _calculateAverageRating(doctor.ratings)),
               ],
             ),
             SizedBox(height: 20),
@@ -56,7 +67,8 @@ class BookDoctorDetailsView extends StatelessWidget {
             ),
             SizedBox(height: 5),
             Text(
-              "I am ${doctor.name}, a renowned ${doctor.specialty}. Looking forward to serving my patients. Book an appointment now to get a seamless recovery experience.",
+              doctor.bio ??
+                  "I am ${doctor.fullName}, a ${doctor.specialty} specialist. Looking forward to serving my patients.",
               style: GoogleFonts.manrope(fontSize: 14, color: Colors.grey[700]),
               textAlign: TextAlign.justify,
             ),
@@ -69,7 +81,7 @@ class BookDoctorDetailsView extends StatelessWidget {
                 style: GoogleFonts.manrope(fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
-                '9am - 6pm',
+                _formatAvailableTimes(doctor.availableTimes),
                 style: GoogleFonts.manrope(),
               ),
             ),
@@ -85,7 +97,8 @@ class BookDoctorDetailsView extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
-                  // Handle booking appointment
+                  // Get.toNamed(RouteName.patientBookAppointment,
+                  //     arguments: doctor);  //TODO: add book appointment
                 },
                 child: Text(
                   'Book Appointment',
@@ -121,5 +134,24 @@ class BookDoctorDetailsView extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  // Calculate average rating from ratings list
+  String _calculateAverageRating(List<RatingModel> ratings) {
+    if (ratings.isEmpty) return 'No ratings';
+    final average =
+        ratings.map((r) => r.stars).reduce((a, b) => a + b) / ratings.length;
+    return average.toStringAsFixed(1);
+  }
+
+  // Format available times
+  String _formatAvailableTimes(List<DateTime> availableTimes) {
+    if (availableTimes.isEmpty) return 'Not available';
+
+    final times = availableTimes.map((time) {
+      return DateFormat('h:mm a').format(time);
+    }).join(', ');
+
+    return 'Available at: $times';
   }
 }

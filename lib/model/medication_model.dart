@@ -1,10 +1,10 @@
 class MedicationModel {
   final String id;
-  final String medicineId;
+  final int medicineId;
   final int quantity;
   final DateTime assignedTime;
-  final String assignedTo;
-  final String assignedBy;
+  final String assignedTo; //patient
+  final String assignedBy; //doctor or pharmacist
   bool isTaken;
 
   MedicationModel({

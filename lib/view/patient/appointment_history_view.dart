@@ -1,14 +1,11 @@
-import 'package:healty_ways/model/shared/appointment.dart';
+import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/resources/components/patient/appointment_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/shared/appointments_view_model.dart';
+import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:intl/intl.dart';
 
 class AppointmentHistoryView extends StatelessWidget {
-  AppointmentHistoryView({super.key});
-
-  final AppointmentViewModel appointmentViewModel =
-      Get.put(AppointmentViewModel());
+  final AppointmentsViewModel appointmentVM = Get.put(AppointmentsViewModel());
 
   @override
   Widget build(BuildContext context) {
@@ -17,33 +14,34 @@ class AppointmentHistoryView extends StatelessWidget {
         titleText: 'Appointments',
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: const Icon(
-            Icons.home,
-            color: Colors.white,
-          ),
+          icon: const Icon(Icons.home, color: Colors.white),
         ),
       ),
       body: Obx(() {
-        final groupedAppointments =
-            appointmentViewModel.getAppointmentsByDate();
+        if (appointmentVM.appointments.isEmpty) {
+          return Center(child: Text('No appointments found'));
+        }
+
+        final groupedAppointments = appointmentVM.getAppointmentsByDate();
+        final sortedDates = groupedAppointments.keys.toList()
+          ..sort((a, b) => b.compareTo(a));
 
         return ListView.separated(
           padding: const EdgeInsets.all(16),
-          itemCount: groupedAppointments.length,
-          separatorBuilder: (context, index) => const Divider(),
+          itemCount: sortedDates.length,
+          separatorBuilder: (context, index) => const Divider(height: 24),
           itemBuilder: (context, index) {
-            final date = groupedAppointments.keys.elementAt(index);
-            final appointmentsForDate = groupedAppointments[date]!;
-
-            return _buildDateGroup(context, date, appointmentsForDate);
+            final date = sortedDates[index];
+            final appointments = groupedAppointments[date]!;
+            return _buildDateGroup(context, date, appointments);
           },
         );
       }),
     );
   }
 
-  Widget _buildDateGroup(
-      BuildContext context, DateTime date, List<Appointment> appointments) {
+  Widget _buildDateGroup(BuildContext context, DateTime date,
+      List<AppointmentModel> appointments) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -58,7 +56,7 @@ class AppointmentHistoryView extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                DateFormat('MMM').format(date), // Month abbreviation
+                DateFormat('MMM').format(date),
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.white,
@@ -67,7 +65,7 @@ class AppointmentHistoryView extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                DateFormat('dd').format(date), // Day of the month
+                DateFormat('dd').format(date),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -84,7 +82,7 @@ class AppointmentHistoryView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                DateFormat('EEEE').format(date), // Day of the week
+                DateFormat('EEEE').format(date),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -92,22 +90,22 @@ class AppointmentHistoryView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              ...appointments.map(
-                (appointment) => Padding(
+              ...appointments.map((appointment) {
+                final doctor =
+                    appointmentVM.getDoctorInfo(appointment.doctorId);
+                return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2.0),
                   child: AppointmentCard(
-                    name:
-                        "Dr. ${appointment.doctorEmail.split('@')[0]}", // Example doctor name
-                    profilePhoto:
-                        "assets/images/profile.jpg", // Example profile photo
-                    state: appointment.state,
-                    specialty: appointment.specality,
-                    qualification:
-                        appointment.qualification, // Pass qualification
-                    time: TimeOfDay.fromDateTime(appointment.time), // Pass time
+                    name: doctor?.fullName ?? 'Unknown Doctor',
+                    profilePhoto: doctor?.profileImage ??
+                        'assets/images/default_doctor.png',
+                    state: appointment.status,
+                    specialty: doctor?.specialty ?? 'General',
+                    qualification: doctor?.qualification ?? 'MD',
+                    time: TimeOfDay.fromDateTime(appointment.time),
                   ),
-                ),
-              ),
+                );
+              }),
             ],
           ),
         ),

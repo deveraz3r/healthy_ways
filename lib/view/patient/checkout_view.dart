@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healty_ways/view_model/patient/medicine_request_view_model.dart';
+import 'package:healty_ways/model/order_model.dart';
+import 'package:healty_ways/view_model/order_view_model.dart';
 
 class CheckoutView extends StatelessWidget {
-  final MedicineRequestViewModel viewModel = Get.find();
+  final OrderViewModel viewModel = Get.find();
+  final List<MedicineItem> medicines;
+
+  CheckoutView({Key? key, required this.medicines}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,39 +26,37 @@ class CheckoutView extends StatelessWidget {
           children: [
             // List of Medicine Requests
             Expanded(
-              child: Obx(() {
-                return ListView.builder(
-                  itemCount: viewModel.medicineRequests.length,
-                  itemBuilder: (context, index) {
-                    final request = viewModel.medicineRequests[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Medicine ${index + 1}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+              child: ListView.builder(
+                itemCount: medicines.length,
+                itemBuilder: (context, index) {
+                  final medicine = medicines[index];
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: EdgeInsets.only(bottom: 16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Medicine ${index + 1}",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(height: 12),
-                            Text("Name: ${request.name}"),
-                            Text("Formula: ${request.formula}"),
-                            Text("Quantity: ${request.quantity}"),
-                          ],
-                        ),
+                          ),
+                          SizedBox(height: 12),
+                          Text("Name: ${medicine.name}"),
+                          Text("Formula: ${medicine.formula}"),
+                          Text("Quantity: ${medicine.quantity}"),
+                        ],
                       ),
-                    );
-                  },
-                );
-              }),
+                    ),
+                  );
+                },
+              ),
             ),
             SizedBox(height: 16),
 
@@ -63,9 +65,29 @@ class CheckoutView extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Handle place order
-                  viewModel.clearMedicineRequests();
-                  Get.back(); // Navigate back to the previous screen
+                  // Create order from medicines
+                  final order = OrderModel(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    patientId:
+                        'currentPatientId', // You'll need to get this from auth
+                    medicineIds: medicines
+                        .map((m) => m.name)
+                        .toList(), // Or generate proper IDs
+                    orderTime: DateTime.now(),
+                    status: OrderStatus.processing,
+                    updates: [
+                      OrderUpdate(
+                        timestamp: DateTime.now(),
+                        message: 'Order created',
+                      ),
+                    ],
+                  );
+
+                  // Save order (you'll need to implement this in OrderViewModel)
+                  viewModel.createOrder(order);
+
+                  // Navigate back
+                  Get.back();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
@@ -89,4 +111,17 @@ class CheckoutView extends StatelessWidget {
       ),
     );
   }
+}
+
+// Simple model to represent medicine items (same as in RequestMedicneView)
+class MedicineItem {
+  final String name;
+  final String formula;
+  final int quantity;
+
+  MedicineItem({
+    required this.name,
+    required this.formula,
+    required this.quantity,
+  });
 }

@@ -40,6 +40,17 @@ class OrderViewModel extends GetxController {
     }
   }
 
+  Future<void> createOrder(OrderModel order) async {
+    try {
+      await _firestore.collection('orders').doc(order.id).set(order.toJson());
+      // Optionally show success message
+      Get.snackbar('Success', 'Order placed successfully');
+    } catch (e) {
+      // Handle error
+      Get.snackbar('Error', 'Failed to place order');
+    }
+  }
+
   // Helper method to get status as string
   String getStatusString(OrderStatus status) {
     return OrderModel.orderStatusToString(status);

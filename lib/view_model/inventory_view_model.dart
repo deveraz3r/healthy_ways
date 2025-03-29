@@ -4,9 +4,7 @@ import 'package:healty_ways/model/medicine_model.dart';
 
 class InventoryViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final RxList<MedicineModel> _inventory = <MedicineModel>[].obs;
-
-  List<MedicineModel> get inventory => _inventory;
+  final RxList<MedicineModel> inventory = <MedicineModel>[].obs;
 
   Future<void> fetchInventory(String userId, String userType) async {
     final collection =
@@ -17,7 +15,7 @@ class InventoryViewModel extends GetxController {
         .where('userId', isEqualTo: userId)
         .get();
 
-    _inventory.assignAll(
+    inventory.assignAll(
         query.docs.map((doc) => MedicineModel.fromJson(doc.data())).toList());
   }
 
@@ -26,10 +24,10 @@ class InventoryViewModel extends GetxController {
         .collection('inventory')
         .doc(docId)
         .update({'stock': newQuantity});
-    final index = _inventory.indexWhere((item) => item.id == docId);
+    final index = inventory.indexWhere((item) => item.id == docId);
     if (index != -1) {
-      _inventory[index].stock = newQuantity;
-      _inventory.refresh();
+      inventory[index].stock = newQuantity;
+      inventory.refresh();
     }
   }
 }

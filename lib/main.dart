@@ -29,3 +29,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// Get.to(
+//   PharmacyDeliveryDetailsView(orderId: 'your_order_id'),
+// );

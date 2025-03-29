@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/shared/inventory_medicne.dart';
+import 'dart:math';
+
+import 'package:healty_ways/model/medicine_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/patient/inventory_view_model.dart';
+import 'package:healty_ways/view_model/inventory_view_model.dart';
 
 class InventoryAddItemView extends StatelessWidget {
   final InventoryViewModel inventoryViewModel = Get.find();
@@ -93,18 +93,20 @@ class InventoryAddItemView extends StatelessWidget {
                     onTap: () {
                       if (_formKey.currentState!.validate()) {
                         // Create a new Medicine object
-                        final newMedicine = Medicine(
+                        final newMedicine = MedicineModel(
+                          id: Random()
+                              .nextInt(99999999), //TODO: change to dynamic id
                           name: _nameController.text,
                           formula: _formulaController.text,
-                          quantity: int.parse(_quantityController.text),
-                          quantityType: _quantityTypeController.text,
+                          stock: int.parse(_quantityController.text),
+                          stockType: _quantityTypeController.text,
                           imageUrl: _imageUrlController.text.isEmpty
                               ? null
                               : _imageUrlController.text,
                         );
 
                         // Add the new medicine to the inventory
-                        inventoryViewModel.medicines.add(newMedicine);
+                        inventoryViewModel.inventory.add(newMedicine);
 
                         // Navigate back to the inventory page
                         Get.back();

@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/patient/medicine_request_view_model.dart';
-import 'package:healty_ways/model/patient/medicine_request.dart';
+import 'package:healty_ways/view_model/order_view_model.dart';
 
 class RequestMedicneView extends StatefulWidget {
   @override
@@ -10,8 +7,9 @@ class RequestMedicneView extends StatefulWidget {
 }
 
 class _RequestMedicneViewState extends State<RequestMedicneView> {
-  final MedicineRequestViewModel viewModel =
-      Get.put(MedicineRequestViewModel());
+  final OrderViewModel viewModel = Get.put(OrderViewModel());
+  final List<MedicineItem> _medicines =
+      []; // Temporary list for medicines before checkout
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _formulaController = TextEditingController();
@@ -34,39 +32,37 @@ class _RequestMedicneViewState extends State<RequestMedicneView> {
           children: [
             // List of Medicine Cards
             Expanded(
-              child: Obx(() {
-                return ListView.builder(
-                  itemCount: viewModel.medicineRequests.length,
-                  itemBuilder: (context, index) {
-                    final request = viewModel.medicineRequests[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Medicine ${index + 1}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+              child: ListView.builder(
+                itemCount: _medicines.length,
+                itemBuilder: (context, index) {
+                  final medicine = _medicines[index];
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: EdgeInsets.only(bottom: 16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Medicine ${index + 1}",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(height: 12),
-                            Text("Name: ${request.name}"),
-                            Text("Formula: ${request.formula}"),
-                            Text("Quantity: ${request.quantity}"),
-                          ],
-                        ),
+                          ),
+                          SizedBox(height: 12),
+                          Text("Name: ${medicine.name}"),
+                          Text("Formula: ${medicine.formula}"),
+                          Text("Quantity: ${medicine.quantity}"),
+                        ],
                       ),
-                    );
-                  },
-                );
-              }),
+                    ),
+                  );
+                },
+              ),
             ),
             SizedBox(height: 16),
 
@@ -111,18 +107,22 @@ class _RequestMedicneViewState extends State<RequestMedicneView> {
                     SizedBox(height: 8),
                     TextButton(
                       onPressed: () {
-                        // Add new medicine request
-                        final request = MedicineRequest(
-                          name: _nameController.text,
-                          formula: _formulaController.text,
-                          quantity: int.parse(_quantityController.text),
-                        );
-                        viewModel.addMedicineRequest(request);
+                        // Add new medicine to temporary list
+                        if (_nameController.text.isNotEmpty &&
+                            _quantityController.text.isNotEmpty) {
+                          setState(() {
+                            _medicines.add(MedicineItem(
+                              name: _nameController.text,
+                              formula: _formulaController.text,
+                              quantity: int.parse(_quantityController.text),
+                            ));
+                          });
 
-                        // Clear input fields
-                        _nameController.clear();
-                        _formulaController.clear();
-                        _quantityController.clear();
+                          // Clear input fields
+                          _nameController.clear();
+                          _formulaController.clear();
+                          _quantityController.clear();
+                        }
                       },
                       child: Text(
                         "+ Add new",
@@ -139,10 +139,15 @@ class _RequestMedicneViewState extends State<RequestMedicneView> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  // Navigate to CheckoutView
-                  Get.toNamed(RouteName.patientRequestMedicineCheckout);
-                },
+                onPressed: _medicines.isEmpty
+                    ? null
+                    : () {
+                        // Pass medicines to checkout view
+                        Get.toNamed(
+                          RouteName.patientRequestMedicineCheckout,
+                          arguments: _medicines,
+                        );
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
                   shape: RoundedRectangleBorder(
@@ -190,4 +195,17 @@ class _RequestMedicneViewState extends State<RequestMedicneView> {
       ],
     );
   }
+}
+
+// Simple model to represent medicine items before creating an order
+class MedicineItem {
+  final String name;
+  final String formula;
+  final int quantity;
+
+  MedicineItem({
+    required this.name,
+    required this.formula,
+    required this.quantity,
+  });
 }

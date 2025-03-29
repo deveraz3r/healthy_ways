@@ -1,4 +1,4 @@
-import 'package:healty_ways/view_model/patient/inventory_view_model.dart';
+import 'package:healty_ways/view_model/inventory_view_model.dart';
 import 'package:healty_ways/resources/components/patient/inventory_medicne_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 
@@ -38,9 +38,9 @@ class InventoryView extends StatelessWidget {
       body: Obx(() {
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: inventoryViewModel.medicines.length,
+          itemCount: inventoryViewModel.inventory.length,
           itemBuilder: (context, index) {
-            final medicine = inventoryViewModel.medicines[index];
+            final medicine = inventoryViewModel.inventory[index];
             return InventoryMedicneCard(
               medicine: medicine,
             );

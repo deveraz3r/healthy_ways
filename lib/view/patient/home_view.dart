@@ -3,13 +3,13 @@ import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/resources/components/patient/medication_card.dart';
 import 'package:healty_ways/resources/components/patient/home_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/patient/medications_view_model.dart';
+import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:healty_ways/resources/components/patient/build_calendar.dart';
 
 class HomeView extends StatelessWidget {
-  final MedicationsViewModel medicationsViewModel =
-      Get.put(MedicationsViewModel());
+  final AssignedMedicationViewModel _assignedMedicationVM =
+      Get.put(AssignedMedicationViewModel());
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class HomeView extends StatelessWidget {
               // const SizedBox(height: 10),
               BuildCalendar(
                 onDateSelected: (date) {
-                  medicationsViewModel
+                  _assignedMedicationVM
                       .updateSelectedDate(date); // Update selected date
                 },
               ),
@@ -57,9 +57,11 @@ class HomeView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Obx(() {
-                  final selectedDate = medicationsViewModel.selectedDate;
-                  final isToday =
-                      selectedDate.isToday(); // Use the isToday method
+                  final selectedDate = _assignedMedicationVM.selectedDate.value;
+                  final isToday = selectedDate.year == DateTime.now().year &&
+                      selectedDate.month == DateTime.now().month &&
+                      selectedDate.day == DateTime.now().day;
+
                   final formattedDate = DateFormat('MMM dd, yyyy')
                       .format(selectedDate); // Format the date
 
@@ -149,23 +151,8 @@ class HomeView extends StatelessWidget {
 
   Widget _buildMedicationGrid() {
     return Obx(() {
-      // Filter medications based on the selected date
-      final filteredMedications = medicationsViewModel.medications
-          .where((medication) =>
-              medication.time.year == medicationsViewModel.selectedDate.year &&
-              medication.time.month ==
-                  medicationsViewModel.selectedDate.month &&
-              medication.time.day == medicationsViewModel.selectedDate.day)
-          .toList();
-
-      // Convert filtered medications to MedicationCard widgets
-      final medicationCards = filteredMedications
-          .map((medication) => MedicationCard(
-                medication: medication,
-                onToggle: () => medicationsViewModel
-                    .toggleMedicationStatus(medication), // Pass toggle callback
-              ))
-          .toList();
+      final medications = _assignedMedicationVM
+          .getMedicationsForDate(_assignedMedicationVM.selectedDate.value);
 
       return GridView.count(
         shrinkWrap: true,
@@ -174,7 +161,13 @@ class HomeView extends StatelessWidget {
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
         childAspectRatio: 1.25,
-        children: medicationCards,
+        children: medications
+            .map((am) => MedicationCard(
+                  assignedMedication: am,
+                  onToggle: () =>
+                      _assignedMedicationVM.markAsTaken(am.medication.id),
+                ))
+            .toList(),
       );
     });
   }

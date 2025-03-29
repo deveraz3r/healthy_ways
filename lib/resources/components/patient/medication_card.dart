@@ -1,75 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:healty_ways/model/patient/medications.dart';
+import 'package:healty_ways/model/assigned_medication_model.dart';
 import 'package:healty_ways/resources/app_colors.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:intl/intl.dart';
 
 class MedicationCard extends StatelessWidget {
-  final Medications medication; // Use the Medications model
-  final VoidCallback onToggle; // Callback for toggling isTaken
+  final AssignedMedicationModel assignedMedication;
+  final VoidCallback onToggle;
 
   const MedicationCard({
     super.key,
-    required this.medication,
-    required this.onToggle, // Add callback
+    required this.assignedMedication,
+    required this.onToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Format the DateTime to a readable string
-    String formattedTime = DateFormat('h:mm a').format(medication.time);
-
-    // Determine the status based on isTaken
-    String status = medication.isTaken ? 'Taken' : 'Pending';
+    String formattedTime =
+        DateFormat('h:mm a').format(assignedMedication.assignedTime);
+    String status = assignedMedication.isTaken ? 'Taken' : 'Pending';
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 5),
-            // Medication Name
             Text(
-              medication.medicationName,
+              assignedMedication.medicineName,
               style: GoogleFonts.roboto(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            // const SizedBox(height: 4),
-            // Dosage
             Text(
-              '${medication.dosage} ${medication.dosageType}', // Include dosageType
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
+              '${assignedMedication.medicineFormula} ${assignedMedication.medicineStockType}',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 5),
             Row(
               children: [
-                Icon(
-                  Icons.access_time,
-                  size: 16,
-                  color: Colors.black.withOpacity(0.7),
-                ),
+                Icon(Icons.access_time,
+                    size: 16, color: Colors.black.withOpacity(0.7)),
                 const SizedBox(width: 5),
                 Text(
-                  formattedTime, // Use formatted time
+                  formattedTime,
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black.withOpacity(0.7),
-                  ),
+                      fontSize: 12, color: Colors.black.withOpacity(0.7)),
                 )
               ],
             ),
-            // const SizedBox(height: 5),
             const Divider(),
             InkWell(
               onTap: onToggle,

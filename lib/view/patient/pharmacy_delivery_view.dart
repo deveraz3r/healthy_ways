@@ -1,56 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healty_ways/model/order_model.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/utils/routes/route_name.dart';
-import 'package:healty_ways/view_model/patient/pharmacy_delivery_view_model.dart';
+import 'package:healty_ways/view_model/order_view_model.dart';
 import 'package:healty_ways/resources/components/shared/date_group_card.dart';
 
 class PharmacyView extends StatelessWidget {
-  PharmacyView({super.key});
-
-  final PharmacyDeliveryViewModel deliveryViewModel =
-      Get.put(PharmacyDeliveryViewModel());
+  final OrderViewModel orderVM = Get.put(OrderViewModel());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        titleText: 'Pharmacy Delivery',
-        // enableBack: true,
+        titleText: 'Pharmacy Orders',
         leading: IconButton(
           onPressed: () => Get.back(),
-          icon: Icon(
-            Icons.home,
-            color: Colors.white,
-          ),
+          icon: const Icon(Icons.home, color: Colors.white),
         ),
         actions: [
-          InkWell(
-            onTap: () {
-              // Navigate to the request medication page
-              Get.toNamed(RouteName.patientRequestMedication);
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+            onPressed: () =>{
+              Get.toNamed(
+  RouteName.patientRequestMedicineCheckout,
+  arguments: _medicines, // Pass the list of medicines
+);
             },
-            child: const Padding(
-              padding: EdgeInsets.all(15),
-              child: Icon(
-                Icons.add_circle_outline,
-                color: Colors.white,
-              ),
-            ),
           ),
         ],
       ),
       body: Obx(() {
-        return ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: deliveryViewModel.deliveries.length,
-          separatorBuilder: (context, index) => const Divider(),
-          itemBuilder: (context, index) {
-            final delivery = deliveryViewModel.deliveries[index];
-            return DateGroupCard(delivery: delivery); // Use the DateGroupCard
-          },
+        if (orderVM.orders.isEmpty) {
+          return const Center(child: Text('No orders found'));
+        }
+
+        // Group orders by date
+        final groupedOrders = _groupOrdersByDate(orderVM.orders);
+
+        return RefreshIndicator(
+          onRefresh: () async =>
+              await orderVM.fetchUserOrders('currentUserId', true),
+          child: ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: groupedOrders.length,
+            separatorBuilder: (context, index) => const Divider(height: 24),
+            itemBuilder: (context, index) {
+              final date = groupedOrders.keys.elementAt(index);
+              final ordersForDate = groupedOrders[date]!;
+
+              return DateGroupCard(
+                date: date,
+                orders: ordersForDate,
+                onStatusChange: (orderId, newStatus) {
+                  orderVM.updateOrderStatus(orderId, newStatus);
+                },
+              );
+            },
+          ),
         );
       }),
     );
+  }
+
+  Map<DateTime, List<OrderModel>> _groupOrdersByDate(List<OrderModel> orders) {
+    final grouped = <DateTime, List<OrderModel>>{};
+
+    for (final order in orders) {
+      final date = DateTime(
+        order.orderTime.year,
+        order.orderTime.month,
+        order.orderTime.day,
+      );
+
+      grouped.putIfAbsent(date, () => []).add(order);
+    }
+
+    return grouped;
   }
 }

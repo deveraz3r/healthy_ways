@@ -1,37 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healty_ways/model/patient/pharmacy_delivery.dart';
+import 'package:healty_ways/model/order_model.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
-import 'package:healty_ways/view_model/patient/pharmacy_delivery_view_model.dart';
+import 'package:healty_ways/view_model/order_view_model.dart';
 import 'package:intl/intl.dart';
-
-extension IterableExtension<T> on Iterable<T> {
-  T? firstWhereOrNull(bool Function(T) test) {
-    for (var element in this) {
-      if (test(element)) {
-        return element;
-      }
-    }
-    return null;
-  }
-}
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PharmacyDeliveryDetailsView extends StatelessWidget {
-  final String orderId; // Order ID to fetch details
+  final String orderId;
 
   const PharmacyDeliveryDetailsView({super.key, required this.orderId});
 
   @override
   Widget build(BuildContext context) {
-    final PharmacyDeliveryViewModel deliveryViewModel =
-        Get.find<PharmacyDeliveryViewModel>();
+    final OrderViewModel orderVM = Get.find<OrderViewModel>();
 
-    // Find the delivery entry by orderId
-    final DeliveryEntry? delivery = deliveryViewModel.deliveries
-        .expand((delivery) => delivery.deliveries)
-        .firstWhereOrNull((entry) => entry.orderId == orderId);
+    // Find the order by ID with proper null check
+    final OrderModel? order = orderVM.orders.firstWhereOrNull(
+      (o) => o.id == orderId,
+    );
 
-    if (delivery == null) {
+    if (order == null) {
       return Scaffold(
         appBar: ReusableAppBar(
           titleText: 'Order Details',
@@ -58,20 +47,16 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Order #${delivery.orderId}",
+                  "Order #${order.id.substring(0, 8)}",
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  delivery.status.name, // Use enum's name property
+                  _getStatusText(order.status),
                   style: TextStyle(
-                    color: delivery.status == DeliveryStatus.completed
-                        ? Colors.green
-                        : delivery.status == DeliveryStatus.returned
-                            ? Colors.red
-                            : Colors.orange,
+                    color: _getStatusColor(order.status),
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -81,17 +66,17 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
             const SizedBox(height: 16),
             // Requested Date
             Text(
-              'Requested: ${DateFormat('MMM dd, yyyy').format(delivery.requestedDate)}',
+              'Requested: ${DateFormat('MMM dd, yyyy').format(order.orderTime)}',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
             ),
-            if (delivery.deliveredDate != null) ...[
+            // Only show delivered date if status is completed
+            if (order.status == OrderStatus.completed) ...[
               const SizedBox(height: 8),
-              // Delivered Date
               Text(
-                'Delivered: ${DateFormat('MMM dd, yyyy').format(delivery.deliveredDate!)}',
+                'Delivered: ${DateFormat('MMM dd, yyyy').format(order.orderTime.add(const Duration(days: 1)))}',
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -108,8 +93,8 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ...delivery.medicines.map(
-              (medicine) => Padding(
+            ...order.medicineIds.map(
+              (medicineId) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
@@ -119,12 +104,27 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
                       color: Colors.grey,
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      '${medicine.name} (Qty: ${medicine.quantity})',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                    FutureBuilder<String>(
+                      future: _getMedicineName(medicineId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Text(
+                            'Loading...',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          );
+                        }
+                        return Text(
+                          '${snapshot.data ?? 'Unknown Medicine'} (Qty: 1)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -140,8 +140,8 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ...delivery.updateMessages.map(
-              (message) => Padding(
+            ...order.updates.map(
+              (update) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,12 +153,25 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        message,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            DateFormat('MMM dd, hh:mm a')
+                                .format(update.timestamp),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          Text(
+                            update.message,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -169,5 +182,47 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<String> _getMedicineName(String medicineId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('medicines')
+          .doc(medicineId)
+          .get();
+
+      if (doc.exists && doc.data() != null) {
+        return doc.data()!['name'] ?? 'Unknown Medicine';
+      }
+      return 'Unknown Medicine';
+    } catch (e) {
+      return 'Unknown Medicine';
+    }
+  }
+
+  String _getStatusText(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.processing:
+        return 'Processing';
+      case OrderStatus.inProgress:
+        return 'In Progress';
+      case OrderStatus.completed:
+        return 'Completed';
+      case OrderStatus.cancelled:
+        return 'Cancelled';
+    }
+  }
+
+  Color _getStatusColor(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.processing:
+        return Colors.orange;
+      case OrderStatus.inProgress:
+        return Colors.blue;
+      case OrderStatus.completed:
+        return Colors.green;
+      case OrderStatus.cancelled:
+        return Colors.red;
+    }
   }
 }

@@ -1,9 +1,9 @@
-class PatientInventoryModel {
+class InventoryModel {
   final String medicineId;
   final int stock;
   final String patientId;
 
-  PatientInventoryModel({
+  InventoryModel({
     required this.medicineId,
     required this.stock,
     required this.patientId,
@@ -15,8 +15,7 @@ class PatientInventoryModel {
         'patientId': patientId,
       };
 
-  factory PatientInventoryModel.fromJson(Map<String, dynamic> json) =>
-      PatientInventoryModel(
+  factory InventoryModel.fromJson(Map<String, dynamic> json) => InventoryModel(
         medicineId: json['medicineId'],
         stock: json['stock'],
         patientId: json['patientId'],
