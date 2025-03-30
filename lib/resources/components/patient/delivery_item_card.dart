@@ -1,28 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/patient/pharmacy_delivery.dart';
-import 'package:healty_ways/view/patient/pharmacy_delivery_details_view.dart';
 import 'package:intl/intl.dart';
 
 class DeliveryItemCard extends StatelessWidget {
-  final DeliveryEntry delivery;
+  final String orderId;
+  final String status;
+  final DateTime requestedDate;
+  final List<String> updateMessages;
+  final Function()? onTap;
 
-  const DeliveryItemCard({super.key, required this.delivery});
+  const DeliveryItemCard({
+    super.key,
+    required this.orderId,
+    required this.status,
+    required this.requestedDate,
+    this.updateMessages = const [],
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     // Get the latest update message
-    final latestUpdate = delivery.updateMessages.isNotEmpty
-        ? delivery.updateMessages.last
+    final latestUpdate = updateMessages.isNotEmpty
+        ? updateMessages.last
         : 'No updates available';
 
     return InkWell(
-      onTap: () {
-        // Navigate to the detailed view
-        Get.to(
-          () => PharmacyDeliveryDetailsView(orderId: delivery.orderId),
-        );
-      },
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey[300]!, width: 1),
@@ -37,18 +40,18 @@ class DeliveryItemCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Order #${delivery.orderId}",
+                  "Order #$orderId",
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  delivery.status.name, // Use enum's name property
+                  status,
                   style: TextStyle(
-                    color: delivery.status == DeliveryStatus.completed
+                    color: status.toLowerCase() == 'completed'
                         ? Colors.green
-                        : delivery.status == DeliveryStatus.returned
+                        : status.toLowerCase() == 'returned'
                             ? Colors.red
                             : Colors.orange,
                     fontSize: 14,
@@ -59,7 +62,7 @@ class DeliveryItemCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Requested: ${DateFormat('MMM dd, yyyy').format(delivery.requestedDate)}',
+              'Requested: ${DateFormat('MMM dd, yyyy').format(requestedDate)}',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],

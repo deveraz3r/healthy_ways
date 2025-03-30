@@ -4,9 +4,7 @@ import 'package:healty_ways/model/patient_model.dart';
 
 class PatientsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final RxList<PatientModel> _patients = <PatientModel>[].obs;
-
-  List<PatientModel> get patients => _patients;
+  final RxList<PatientModel> patients = <PatientModel>[].obs;
 
   Future<void> fetchDoctorPatients(String doctorId) async {
     final query = await _firestore
@@ -14,7 +12,7 @@ class PatientsViewModel extends GetxController {
         .where('assignedDoctor', isEqualTo: doctorId)
         .get();
 
-    _patients.assignAll(
+    patients.assignAll(
         query.docs.map((doc) => PatientModel.fromJson(doc.data())).toList());
   }
 

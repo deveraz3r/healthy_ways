@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/doctor/doctor_profile_view_model.dart';
+import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class DoctorProfileView extends StatefulWidget {
   @override
@@ -10,7 +9,8 @@ class DoctorProfileView extends StatefulWidget {
 }
 
 class _DoctorProfileViewState extends State<DoctorProfileView> {
-  final DoctorProfileViewModel _profileView = Get.put(DoctorProfileViewModel());
+  final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
+  final String currentUserId = "current_user_id"; // Replace with actual user ID
 
   // Track expanded/collapsed state of sections
   final Map<String, bool> _sectionExpandedState = {
@@ -39,8 +39,13 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
   final TextEditingController _bioController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _profileVM.fetchProfile(currentUserId);
+  }
+
+  @override
   void dispose() {
-    // Dispose controllers to avoid memory leaks
     _nameController.dispose();
     _emailController.dispose();
     _specialtyController.dispose();
@@ -63,15 +68,11 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Text("My Profile",
-                //     style: GoogleFonts.poppins(
-                //         fontSize: 20, fontWeight: FontWeight.w500)),
-                // SizedBox(height: 10),
                 Obx(
                   () => CircleAvatar(
                     radius: 50,
                     backgroundImage: AssetImage(
-                      _profileView.profile.value.profileImage ??
+                      _profileVM.profile['profileImage'] ??
                           "assets/images/profile.jpg",
                     ),
                   ),
@@ -79,7 +80,7 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
                 const SizedBox(height: 10),
                 Obx(
                   () => Text(
-                    _profileView.profile.value.name,
+                    _profileVM.profile['name'] ?? 'No Name',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -95,47 +96,52 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
                   children: [
                     buildEditableField(
                       label: "Name",
-                      value: _profileView.profile.value.name,
+                      value: _profileVM.profile['name'] ?? '',
                       controller: _nameController,
                       fieldKey: "name",
                       onSave: (newValue) {
-                        _profileView.updateName(newValue);
+                        _profileVM
+                            .updateProfile(currentUserId, {'name': newValue});
                       },
                     ),
                     buildEditableField(
                       label: "Email",
-                      value: _profileView.profile.value.email,
+                      value: _profileVM.profile['email'] ?? '',
                       controller: _emailController,
                       fieldKey: "email",
                       onSave: (newValue) {
-                        _profileView.updateEmail(newValue);
+                        _profileVM
+                            .updateProfile(currentUserId, {'email': newValue});
                       },
                     ),
                     buildEditableField(
                       label: "Specialty",
-                      value: _profileView.profile.value.specality,
+                      value: _profileVM.profile['specialty'] ?? '',
                       controller: _specialtyController,
                       fieldKey: "specialty",
                       onSave: (newValue) {
-                        _profileView.updateSpecialty(newValue);
+                        _profileVM.updateProfile(
+                            currentUserId, {'specialty': newValue});
                       },
                     ),
                     buildEditableField(
                       label: "Qualification",
-                      value: _profileView.profile.value.qualification,
+                      value: _profileVM.profile['qualification'] ?? '',
                       controller: _qualificationController,
                       fieldKey: "qualification",
                       onSave: (newValue) {
-                        _profileView.updateQualification(newValue);
+                        _profileVM.updateProfile(
+                            currentUserId, {'qualification': newValue});
                       },
                     ),
                     buildEditableField(
                       label: "Bio",
-                      value: _profileView.profile.value.bio,
+                      value: _profileVM.profile['bio'] ?? '',
                       controller: _bioController,
                       fieldKey: "bio",
                       onSave: (newValue) {
-                        _profileView.updateBio(newValue);
+                        _profileVM
+                            .updateProfile(currentUserId, {'bio': newValue});
                       },
                     ),
                   ],
@@ -173,6 +179,7 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
     );
   }
 
+  // Helper widget methods remain the same as in your original code
   Widget buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 10, bottom: 5),

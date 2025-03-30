@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:healty_ways/model/shared/inventory_medicne.dart';
+import 'package:healty_ways/model/medicine_model.dart';
 
 class InventoryMedicneCard extends StatelessWidget {
-  final Medicine medicine;
+  final MedicineModel medicine;
 
   const InventoryMedicneCard({
     super.key,
@@ -11,7 +11,7 @@ class InventoryMedicneCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isInStock = medicine.quantity <= 0 ? false : true;
+    bool isInStock = medicine.stock <= 0 ? false : true;
 
     return Container(
       decoration: BoxDecoration(
@@ -66,7 +66,7 @@ class InventoryMedicneCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      "${medicine.quantity.toString()} ${medicine.quantityType}",
+                      "${medicine.stock.toString()} ${medicine.stockType}",
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[600],

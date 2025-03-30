@@ -21,12 +21,7 @@ class PharmacyView extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-            onPressed: () =>{
-              Get.toNamed(
-  RouteName.patientRequestMedicineCheckout,
-  arguments: _medicines, // Pass the list of medicines
-);
-            },
+            onPressed: () => {Get.toNamed(RouteName.patientRequestMedication)},
           ),
         ],
       ),

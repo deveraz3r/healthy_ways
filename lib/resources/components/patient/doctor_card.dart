@@ -1,8 +1,8 @@
-import 'package:healty_ways/model/patient/doctor.dart';
+import 'package:healty_ways/model/doctor_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 
 class DoctorCard extends StatelessWidget {
-  final Doctor doctor;
+  final DoctorModel doctor;
   final VoidCallback onTap;
 
   const DoctorCard({
@@ -10,6 +10,14 @@ class DoctorCard extends StatelessWidget {
     required this.doctor,
     required this.onTap,
   });
+
+  // Calculate average rating from all ratings
+  double _calculateAverageRating() {
+    if (doctor.ratings.isEmpty) return 0.0;
+    final totalStars =
+        doctor.ratings.fold(0, (sum, rating) => sum + rating.stars);
+    return totalStars / doctor.ratings.length;
+  }
 
   // Helper function to build star rating
   Widget _buildRatingStars(double rating) {
@@ -19,11 +27,11 @@ class DoctorCard extends StatelessWidget {
     return Row(
       children: List.generate(5, (index) {
         if (index < fullStars) {
-          return Icon(Icons.star, color: Colors.amber, size: 16);
+          return const Icon(Icons.star, color: Colors.amber, size: 16);
         } else if (hasHalfStar && index == fullStars) {
-          return Icon(Icons.star_half, color: Colors.amber, size: 16);
+          return const Icon(Icons.star_half, color: Colors.amber, size: 16);
         } else {
-          return Icon(Icons.star_border, color: Colors.amber, size: 16);
+          return const Icon(Icons.star_border, color: Colors.amber, size: 16);
         }
       }),
     );
@@ -31,8 +39,10 @@ class DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final averageRating = _calculateAverageRating();
+
     return GestureDetector(
-      onTap: onTap, // Trigger the onTap callback
+      onTap: onTap,
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -50,7 +60,8 @@ class DoctorCard extends StatelessWidget {
                   color: AppColors.primaryColor,
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: AssetImage(doctor.profilePhoto),
+                    image: AssetImage(
+                        doctor.profileImage ?? "assets/images/profile.jpg"),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -65,14 +76,19 @@ class DoctorCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          doctor.name,
+                          doctor.fullName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Spacer(),
-                        _buildRatingStars(doctor.rating),
+                        _buildRatingStars(averageRating),
+                        const SizedBox(width: 4),
+                        Text(
+                          averageRating.toStringAsFixed(1),
+                          style: const TextStyle(fontSize: 12),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -88,7 +104,7 @@ class DoctorCard extends StatelessWidget {
                     // Book Appointment Button
                     ReuseableElevatedbutton(
                       buttonName: "Book Appointment",
-                      onPressed: onTap, // Use the same onTap callback
+                      onPressed: onTap,
                     ),
                   ],
                 ),

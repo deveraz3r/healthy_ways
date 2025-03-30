@@ -1,6 +1,5 @@
 import 'package:healty_ways/view/doctor/doctor_appointment_history_details_view.dart';
 import 'package:healty_ways/view/doctor/doctor_appointments_view.dart';
-import 'package:healty_ways/view/doctor/doctor_assigned_patient_details_view.dart';
 import 'package:healty_ways/view/doctor/doctor_assigned_patients_view.dart';
 import 'package:healty_ways/view/doctor/doctor_home_view.dart';
 import 'package:healty_ways/view/doctor/doctor_profile_view.dart';
@@ -8,7 +7,6 @@ import 'package:healty_ways/view/patient/appointment_history_view.dart';
 import 'package:healty_ways/view/patient/appointment_report_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_details_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_view.dart';
-import 'package:healty_ways/view/patient/checkout_view.dart';
 import 'package:healty_ways/view/patient/home_view.dart';
 import 'package:healty_ways/view/patient/inventory_add_item_view.dart';
 import 'package:healty_ways/view/patient/inventory_view.dart';
@@ -66,10 +64,10 @@ class Routes {
           name: RouteName.patientPharmacy,
           page: () => PharmacyView(),
         ),
-        GetPage(
-          name: RouteName.patientRequestMedicineCheckout,
-          page: () => CheckoutView(),
-        ),
+        // GetPage(
+        //   name: RouteName.patientRequestMedicineCheckout, //add args while calling
+        //   page: () => CheckoutView(),
+        // ),
         // GetPage(
         //   name: RouteName.patientDliveryStatus,
         //   page: () => HomeView(),
@@ -117,10 +115,10 @@ class Routes {
           name: RouteName.doctorAssignedPatientsView,
           page: () => DoctorAssignedPatientsView(),
         ),
-        GetPage(
-          name: RouteName.doctorAssignedPatientDetailsView,
-          page: () => DoctorAssignedPatientDetailsView(),
-        ),
+        // GetPage(
+        //   name: RouteName.doctorAssignedPatientDetailsView,
+        //   page: () => DoctorAssignedPatientDetailsView(),  //add args while calling
+        // ),
         GetPage(
           name: RouteName.doctorProfileView,
           page: () => DoctorProfileView(),

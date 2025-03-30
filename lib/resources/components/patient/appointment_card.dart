@@ -1,11 +1,11 @@
-import 'package:healty_ways/model/shared/appointment.dart';
+import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:intl/intl.dart'; // For time formatting
 
 class AppointmentCard extends StatelessWidget {
   final String name;
   final String profilePhoto;
-  final AppointmentState state;
+  final AppointmentStatus status;
   final String specialty;
   final String qualification;
   final TimeOfDay time;
@@ -14,7 +14,7 @@ class AppointmentCard extends StatelessWidget {
     super.key,
     required this.name,
     required this.profilePhoto,
-    required this.state,
+    required this.status,
     required this.specialty,
     required this.qualification,
     required this.time,
@@ -75,11 +75,11 @@ class AppointmentCard extends StatelessWidget {
                         ),
                         const Spacer(),
                         Text(
-                          state.name,
+                          status.name,
                           style: TextStyle(
-                            color: state == AppointmentState.completed
+                            color: status == AppointmentStatus.completed
                                 ? AppColors.greenColor
-                                : state == AppointmentState.upcoming
+                                : status == AppointmentStatus.upcoming
                                     ? AppColors.orangeColor
                                     : AppColors.redColor,
                             fontSize: 14,

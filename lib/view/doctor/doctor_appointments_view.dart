@@ -1,14 +1,14 @@
-import 'package:healty_ways/model/shared/appointment.dart';
+import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/resources/components/doctor/doctors_appointments_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/shared/appointments_view_model.dart';
+import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:intl/intl.dart';
 
 class DoctorAppointmentsView extends StatelessWidget {
   DoctorAppointmentsView({super.key});
 
-  final AppointmentViewModel appointmentViewModel =
-      Get.put(AppointmentViewModel());
+  final AppointmentsViewModel appointmentViewModel =
+      Get.put(AppointmentsViewModel());
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +42,8 @@ class DoctorAppointmentsView extends StatelessWidget {
     );
   }
 
-  Widget _buildDateGroup(
-      BuildContext context, DateTime date, List<Appointment> appointments) {
+  Widget _buildDateGroup(BuildContext context, DateTime date,
+      List<AppointmentModel> appointments) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

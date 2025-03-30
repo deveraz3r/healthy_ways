@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import '../../utils/app_urls.dart';
 
 class ReuseableElevatedbutton extends StatelessWidget {
@@ -11,6 +12,7 @@ class ReuseableElevatedbutton extends StatelessWidget {
     this.textColor = Colors.white,
     this.padding,
     this.borderColor,
+    this.isLoading = false,
   });
 
   final String buttonName;
@@ -21,6 +23,7 @@ class ReuseableElevatedbutton extends StatelessWidget {
   final EdgeInsets? margin;
   final Color textColor;
   final EdgeInsets? padding;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -30,20 +33,30 @@ class ReuseableElevatedbutton extends StatelessWidget {
       padding: padding,
       margin: margin ?? const EdgeInsets.all(2),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: color,
-          border: Border.all(width: 1, color: borderColor ?? color)),
+        borderRadius: BorderRadius.circular(8),
+        color: color,
+        border: Border.all(width: 1, color: borderColor ?? color),
+      ),
       child: InkWell(
-        onTap: onPressed ?? () {},
+        onTap: isLoading ? null : onPressed,
         child: Center(
-          child: Text(
-            buttonName,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-            ),
-          ),
+          child: isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Text(
+                  buttonName,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
         ),
       ),
     );

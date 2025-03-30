@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:healty_ways/resources/components/doctor/doctor_assigned_patient_tile.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/doctor/assigned_patient_view_model.dart';
+import 'package:healty_ways/view_model/patients_view_model.dart';
 
 class DoctorAssignedPatientsView extends StatelessWidget {
-  final PatientViewModel controller = Get.put(PatientViewModel());
+  final PatientsViewModel controller = Get.put(PatientsViewModel());
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +23,8 @@ class DoctorAssignedPatientsView extends StatelessWidget {
             itemBuilder: (context, index) {
               final patient = controller.patients[index];
               return DoctorAssignedPatientTile(
-                name: patient.name,
-                email: patient.name,
+                name: patient.fullName,
+                email: patient.email,
               );
             },
           )),

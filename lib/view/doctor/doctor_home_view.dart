@@ -1,9 +1,12 @@
 import 'package:healty_ways/resources/components/doctor/doctor_home_profile_card.dart';
 import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class DoctorHomeView extends StatelessWidget {
-  const DoctorHomeView({super.key});
+  DoctorHomeView({super.key});
+
+  final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
 
   @override
   Widget build(BuildContext context) {

@@ -4,12 +4,14 @@ import 'package:healty_ways/resources/components/patient/medication_card.dart';
 import 'package:healty_ways/resources/components/patient/home_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
+import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:healty_ways/resources/components/patient/build_calendar.dart';
 
 class HomeView extends StatelessWidget {
   final AssignedMedicationViewModel _assignedMedicationVM =
       Get.put(AssignedMedicationViewModel());
+  final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
 
   @override
   Widget build(BuildContext context) {

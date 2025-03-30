@@ -99,7 +99,7 @@ class AppointmentHistoryView extends StatelessWidget {
                     name: doctor?.fullName ?? 'Unknown Doctor',
                     profilePhoto: doctor?.profileImage ??
                         'assets/images/default_doctor.png',
-                    state: appointment.status,
+                    status: appointment.status,
                     specialty: doctor?.specialty ?? 'General',
                     qualification: doctor?.qualification ?? 'MD',
                     time: TimeOfDay.fromDateTime(appointment.time),

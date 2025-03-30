@@ -2,9 +2,12 @@ import 'package:healty_ways/resources/components/doctor/doctor_home_profile_card
 import 'package:healty_ways/resources/components/pharmacy/orders_summary_chart.dart';
 import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class PharmacyHomeView extends StatelessWidget {
-  const PharmacyHomeView({super.key});
+  PharmacyHomeView({super.key});
+
+  final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
 
   @override
   Widget build(BuildContext context) {

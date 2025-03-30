@@ -1,9 +1,9 @@
-import 'package:healty_ways/model/shared/appointment.dart'; // Correct import
+import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:intl/intl.dart'; // For time formatting
 
 class DoctorsAppointmentsCard extends StatelessWidget {
-  final Appointment appointment;
+  final AppointmentModel appointment;
 
   DoctorsAppointmentsCard({
     super.key,
@@ -46,7 +46,8 @@ class DoctorsAppointmentsCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   image: DecorationImage(
                     image: AssetImage(
-                      appointment.profilePhoto ?? "assets/images/profile.jpg",
+                      // appointment.profilePhoto ?? "assets/images/profile.jpg",
+                      "assets/images/profile.jpg", //TODO: Add profile Photo
                     ),
                     fit: BoxFit.cover,
                   ),
@@ -62,7 +63,7 @@ class DoctorsAppointmentsCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          appointment.patientEmail.split('@')[0],
+                          appointment.patientId, //TODO: Change to patient email
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -70,12 +71,13 @@ class DoctorsAppointmentsCard extends StatelessWidget {
                         ),
                         const Spacer(),
                         Text(
-                          appointment.state.name,
+                          appointment.status.name,
                           style: TextStyle(
-                            color: appointment.state ==
-                                    AppointmentState.completed
+                            color: appointment.status ==
+                                    AppointmentStatus.completed
                                 ? AppColors.greenColor
-                                : appointment.state == AppointmentState.upcoming
+                                : appointment.status ==
+                                        AppointmentStatus.upcoming
                                     ? AppColors.orangeColor
                                     : AppColors.redColor,
                             fontSize: 14,
