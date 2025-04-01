@@ -41,39 +41,39 @@ class SignupView extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // Role Selection Buttons
-                Obx(
-                  () => ToggleButtons(
-                    isSelected: [
-                      _authViewModel.selectedRole.value == UserRole.doctor,
-                      _authViewModel.selectedRole.value == UserRole.patient,
-                      _authViewModel.selectedRole.value == UserRole.pharmacist,
-                    ],
-                    onPressed: (int index) {
-                      _authViewModel.selectedRole.value =
-                          UserRole.values[index];
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    selectedColor: Colors.black,
-                    fillColor: Colors.white,
-                    color: Colors.white,
-                    textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                    children: const [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text("Doctor"),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text("Patient"),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text("Pharmacy"),
-                      ),
-                    ],
-                  ),
-                ),
+                // Role Selection Buttons - Only this needs Obx since it uses selectedRole
+                Obx(() => ToggleButtons(
+                      isSelected: [
+                        _authViewModel.selectedRole.value == UserRole.doctor,
+                        _authViewModel.selectedRole.value == UserRole.patient,
+                        _authViewModel.selectedRole.value ==
+                            UserRole.pharmacist,
+                      ],
+                      onPressed: (int index) {
+                        _authViewModel.selectedRole.value =
+                            UserRole.values[index];
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      selectedColor: Colors.black,
+                      fillColor: Colors.white,
+                      color: Colors.white,
+                      textStyle:
+                          GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Text("Doctor"),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Text("Patient"),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Text("Pharmacy"),
+                        ),
+                      ],
+                    )),
 
                 const SizedBox(height: 20),
 
@@ -98,58 +98,55 @@ class SignupView extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                // Password Input
-                Obx(
-                  () => ReusableTextField(
-                    controller: _passwordController,
-                    hintText: "Password",
-                    obscureText: _obscurePassword.value,
-                    prefixIcon: Icon(Icons.lock, color: Colors.grey),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
+                // Password Input - Needs Obx for _obscurePassword
+                Obx(() => ReusableTextField(
+                      controller: _passwordController,
+                      hintText: "Password",
+                      obscureText: _obscurePassword.value,
+                      prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () => _obscurePassword.toggle(),
                       ),
-                      onPressed: () => _obscurePassword.toggle(),
-                    ),
-                    onChanged: (value) => _authViewModel.password.value = value,
-                  ),
-                ),
+                      onChanged: (value) =>
+                          _authViewModel.password.value = value,
+                    )),
 
                 const SizedBox(height: 10),
 
-                // Confirm Password Input
-                Obx(
-                  () => ReusableTextField(
-                    controller: _confirmPasswordController,
-                    hintText: "Confirm Password",
-                    obscureText: _obscureConfirmPassword.value,
-                    prefixIcon: Icon(Icons.lock, color: Colors.grey),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword.value
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.grey,
+                // Confirm Password Input - Needs Obx for _obscureConfirmPassword
+                Obx(() => ReusableTextField(
+                      controller: _confirmPasswordController,
+                      hintText: "Confirm Password",
+                      obscureText: _obscureConfirmPassword.value,
+                      prefixIcon: Icon(Icons.lock, color: Colors.grey),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword.value
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () => _obscureConfirmPassword.toggle(),
                       ),
-                      onPressed: () => _obscureConfirmPassword.toggle(),
-                    ),
-                    onChanged: (value) =>
-                        _authViewModel.confirmPassword.value = value,
-                  ),
-                ),
+                      onChanged: (value) =>
+                          _authViewModel.confirmPassword.value = value,
+                    )),
 
                 const SizedBox(height: 20),
 
-                // Sign Up Button
+                // Sign Up Button - Needs Obx for loading state
                 Obx(() => ReuseableElevatedbutton(
                       buttonName: "Sign Up",
                       color: Colors.black,
-                      // isLoading: _authViewModel.loading.value,
+                      isLoading: _authViewModel.loading.value,
                       onPressed: () async {
-                        if (_validateInputs()) {
+                        if (await _validateInputs()) {
                           final success = await _authViewModel.signUp();
                           if (success) {
                             _navigateToHomeScreen();
@@ -160,7 +157,7 @@ class SignupView extends StatelessWidget {
 
                 const SizedBox(height: 4),
 
-                // Login Button
+                // Login Button - Doesn't need Obx as it's static
                 ReuseableElevatedbutton(
                   buttonName: "Already have an account? Login",
                   borderColor: Colors.white,
@@ -175,7 +172,7 @@ class SignupView extends StatelessWidget {
     );
   }
 
-  bool _validateInputs() {
+  Future<bool> _validateInputs() async {
     if (_authViewModel.name.value.isEmpty) {
       Get.snackbar("Error", "Please enter your name");
       return false;
@@ -194,6 +191,15 @@ class SignupView extends StatelessWidget {
       Get.snackbar("Error", "Passwords don't match");
       return false;
     }
+
+    // Check if email exists
+    final emailExists =
+        await _authViewModel.isEmailExists(_authViewModel.email.value);
+    if (emailExists) {
+      Get.snackbar("Error", "Email already registered");
+      return false;
+    }
+
     return true;
   }
 

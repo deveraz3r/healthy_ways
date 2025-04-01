@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healty_ways/resources/widgets/reusable_text_field.dart';
 import 'package:healty_ways/utils/app_urls.dart';
@@ -7,6 +5,9 @@ import 'package:healty_ways/view_model/auth_view_model.dart';
 
 class LoginView extends StatelessWidget {
   final AuthViewModel _authVM = Get.put(AuthViewModel());
+
+  LoginView({super.key});
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -37,36 +38,38 @@ class LoginView extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Role Selection Buttons
-                Obx(() => ToggleButtons(
-                      isSelected: [
-                        _authVM.selectedRole.value == UserRole.doctor,
-                        _authVM.selectedRole.value == UserRole.patient,
-                        _authVM.selectedRole.value == UserRole.pharmacist,
-                      ],
-                      onPressed: (int index) {
-                        _authVM.selectedRole.value = UserRole.values[index];
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      selectedColor: Colors.black,
-                      fillColor: Colors.white,
-                      color: Colors.white,
-                      textStyle:
-                          GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                      children: const [
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text("Doctor"),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text("Patient"),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Text("Pharmacy"),
-                        ),
-                      ],
-                    )),
+                Obx(
+                  () => ToggleButtons(
+                    isSelected: [
+                      _authVM.selectedRole.value == UserRole.doctor,
+                      _authVM.selectedRole.value == UserRole.patient,
+                      _authVM.selectedRole.value == UserRole.pharmacist,
+                    ],
+                    onPressed: (int index) {
+                      _authVM.selectedRole.value = UserRole.values[index];
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    selectedColor: Colors.black,
+                    fillColor: Colors.white,
+                    color: Colors.white,
+                    textStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+                    children: const [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text("Doctor"),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text("Patient"),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text("Pharmacy"),
+                      ),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 20),
 
                 // Email Input
@@ -80,30 +83,34 @@ class LoginView extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Password Input
-                Obx(() => ReusableTextField(
-                      controller: _passwordController,
-                      hintText: "Password",
-                      obscureText: _authVM.obscurePassword.value,
-                      prefixIcon: const Icon(Icons.lock, color: Colors.grey),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _authVM.obscurePassword.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Colors.grey,
-                        ),
-                        onPressed: () => _authVM.togglePasswordVisibility(),
+                Obx(
+                  () => ReusableTextField(
+                    controller: _passwordController,
+                    hintText: "Password",
+                    obscureText: _authVM.obscurePassword.value,
+                    prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _authVM.obscurePassword.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.grey,
                       ),
-                      onChanged: (value) => _authVM.password.value = value,
-                    )),
+                      onPressed: () => _authVM.togglePasswordVisibility(),
+                    ),
+                    onChanged: (value) => _authVM.password.value = value,
+                  ),
+                ),
                 const SizedBox(height: 20),
 
                 // Sign In Button
-                Obx(() => ReuseableElevatedbutton(
-                      buttonName: "Sign In",
-                      color: Colors.black,
-                      isLoading: _authVM.loading.value,
-                      onPressed: () async {
+                Obx(
+                  () => ReuseableElevatedbutton(
+                    buttonName: "Sign In",
+                    color: Colors.black,
+                    isLoading: _authVM.loading.value,
+                    onPressed: () async {
+                      try {
                         final success = await _authVM.login(
                           _emailController.text,
                           _passwordController.text,
@@ -111,8 +118,12 @@ class LoginView extends StatelessWidget {
                         if (success) {
                           _navigateToHomeScreen(_authVM.selectedRole.value);
                         }
-                      },
-                    )),
+                      } catch (e) {
+                        // Errors are already handled in the ViewModel
+                      }
+                    },
+                  ),
+                ),
                 const SizedBox(height: 4),
 
                 // Create Account Button
