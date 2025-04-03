@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healty_ways/model/appointment_model.dart';
-import 'package:healty_ways/resources/app_colors.dart';
-import 'package:healty_ways/resources/components/doctor/doctors_appointments_card.dart';
+import 'package:healty_ways/resources/components/patient/appointment_card.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 
-class DoctorAppointmentsView extends StatefulWidget {
-  const DoctorAppointmentsView({super.key});
+class PatientAppointmentHistoryView extends StatefulWidget {
+  const PatientAppointmentHistoryView({Key? key}) : super(key: key);
 
   @override
-  _DoctorAppointmentsViewState createState() => _DoctorAppointmentsViewState();
+  _PatientAppointmentHistoryViewState createState() =>
+      _PatientAppointmentHistoryViewState();
 }
 
-class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
-  final AppointmentsViewModel appointmentsVM =
-      Get.find<AppointmentsViewModel>();
+class _PatientAppointmentHistoryViewState
+    extends State<PatientAppointmentHistoryView> {
+  final AppointmentsViewModel appointmentVM = Get.find<AppointmentsViewModel>();
   final ProfileViewModel profileVM = Get.find<ProfileViewModel>();
 
   @override
@@ -27,14 +27,17 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
   }
 
   void _fetchAppointments() {
-    if (profileVM.profile != null && appointmentsVM.isInitial.value) {
-      appointmentsVM.fetchUserAppointments(profileVM.profile!.uid, true);
+    if (profileVM.profile != null && appointmentVM.isInitial.value) {
+      appointmentVM.fetchUserAppointments(profileVM.profile!.uid, false);
     }
   }
 
   Future<void> _refreshAppointments() async {
-    await appointmentsVM.fetchUserAppointments(profileVM.profile!.uid, true);
-    setState(() {}); // Force UI update after fetching new data
+    await appointmentVM.fetchUserAppointments(
+      profileVM.profile!.uid,
+      profileVM.isDoctor,
+    );
+    setState(() {}); // Force UI update after fetching data
   }
 
   @override
@@ -48,11 +51,9 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
         ),
       ),
       body: Obx(() {
-        final groupedAppointments = appointmentsVM.getAppointmentsByDate();
-
         return RefreshIndicator(
           onRefresh: _refreshAppointments,
-          child: groupedAppointments.isEmpty
+          child: appointmentVM.appointments.isEmpty
               ? ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: const [
@@ -64,13 +65,20 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
                 )
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
-                  itemCount: groupedAppointments.length,
-                  separatorBuilder: (context, index) => const Divider(),
+                  itemCount: appointmentVM.getAppointmentsByDate().keys.length,
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 24),
                   itemBuilder: (context, index) {
-                    final date = groupedAppointments.keys.elementAt(index);
-                    final appointmentsForDate = groupedAppointments[date]!;
+                    final sortedDates = appointmentVM
+                        .getAppointmentsByDate()
+                        .keys
+                        .toList()
+                      ..sort((a, b) => b.compareTo(a));
+                    final date = sortedDates[index];
+                    final appointments =
+                        appointmentVM.getAppointmentsByDate()[date]!;
 
-                    return _buildDateGroup(context, date, appointmentsForDate);
+                    return _buildDateGroup(context, date, appointments);
                   },
                 ),
         );
@@ -87,7 +95,7 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
         Container(
           width: 45,
           decoration: BoxDecoration(
-            color: AppColors.primaryColor,
+            color: Colors.teal,
             borderRadius: BorderRadius.circular(8),
           ),
           padding: const EdgeInsets.symmetric(vertical: 4),
@@ -128,15 +136,10 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
                 ),
               ),
               const SizedBox(height: 4),
-              // Appointments are now displayed in descending order (latest first)
-              ...appointments.map(
-                (appointment) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: DoctorsAppointmentsCard(
-                    appointment: appointment,
-                  ),
-                ),
-              ),
+              ...appointments.map((appointment) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 1.0),
+                    child: PatientAppointmentCard(appointment: appointment),
+                  )),
             ],
           ),
         ),

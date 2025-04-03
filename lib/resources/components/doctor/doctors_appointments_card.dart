@@ -1,26 +1,28 @@
 import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:intl/intl.dart'; // For time formatting
+import 'package:healty_ways/view_model/appointments_view_model.dart';
+import 'package:intl/intl.dart';
 
 class DoctorsAppointmentsCard extends StatelessWidget {
   final AppointmentModel appointment;
 
-  DoctorsAppointmentsCard({
-    super.key,
-    required this.appointment,
-  });
+  const DoctorsAppointmentsCard({super.key, required this.appointment});
 
   @override
   Widget build(BuildContext context) {
-    // Convert DateTime to TimeOfDay
-    final timeOfDay = TimeOfDay.fromDateTime(appointment.time);
+    final appointmentVM = Get.find<AppointmentsViewModel>();
+    final patient = appointmentVM.getPatientInfo(appointment.patientId);
 
-    // Format time to 12-hour format with AM/PM
-    final formattedTime = _formatTime(timeOfDay);
+    final formattedTime = DateFormat('h:mm a').format(appointment.time);
+    final timeLeft = appointment.time.difference(DateTime.now()).inMinutes;
+    final bool isStartAllowed =
+        appointment.status == AppointmentStatus.upcoming &&
+            timeLeft <= 10 &&
+            timeLeft > 0;
 
     return InkWell(
       onTap: () {
-        Get.toNamed(RouteName.doctorAppointmentHistoryDetailsView);
+        _handleNavigation();
       },
       child: Container(
         decoration: BoxDecoration(
@@ -34,92 +36,128 @@ class DoctorsAppointmentsCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              // Profile Photo (Circular)
-              Container(
-                width: 45,
-                height: 45,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage(
-                      // appointment.profilePhoto ?? "assets/images/profile.jpg",
-                      "assets/images/profile.jpg", //TODO: Add profile Photo
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Patient Profile Photo
+                Container(
+                  width: 45,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage(
+                        patient?.profileImage ?? "assets/images/profile.jpg",
+                      ),
+                      fit: BoxFit.cover,
                     ),
-                    fit: BoxFit.cover,
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              // Doctor Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Doctor Name and Status
-                    Row(
-                      children: [
-                        Text(
-                          appointment.patientId, //TODO: Change to patient email
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                const SizedBox(width: 10),
+                // Patient Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Patient Name and Status
+                      Row(
+                        children: [
+                          Text(
+                            patient?.fullName ?? 'Unknown Patient',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          appointment.status.name,
-                          style: TextStyle(
-                            color: appointment.status ==
-                                    AppointmentStatus.completed
-                                ? AppColors.greenColor
-                                : appointment.status ==
-                                        AppointmentStatus.upcoming
-                                    ? AppColors.orangeColor
-                                    : AppColors.redColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                          const Spacer(),
+                          Text(
+                            appointment.status.name,
+                            style: TextStyle(
+                              color: _getStatusColor(appointment.status),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          formattedTime, // Use formatted time
-                          style: TextStyle(
-                            fontSize: 12,
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      // Time
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 14,
                             color: Colors.grey[600],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 4),
+                          Text(
+                            formattedTime,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (isStartAllowed)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: ReuseableElevatedbutton(
+                  onPressed: () {
+                    // TODO: Implement start appointment logic for doctor
+                    Get.toNamed(
+                      RouteName.doctorAppointmentStartView,
+                      arguments: appointment,
+                    );
+                  },
+                  buttonName: ("Start Appointment"),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
 
-  // Helper method to format TimeOfDay to 12-hour format with AM/PM
-  String _formatTime(TimeOfDay time) {
-    final now = DateTime.now();
-    final dateTime =
-        DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    return DateFormat('h:mm a')
-        .format(dateTime); // Format as 12-hour with AM/PM
+  // Handle navigation based on appointment status
+  void _handleNavigation() {
+    switch (appointment.status) {
+      case AppointmentStatus.upcoming:
+        if (appointment.time.difference(DateTime.now()).inMinutes <= 10) {
+          //navigation handled in start button
+          // Get.toNamed(RouteName.appointmentStart); // TODO: Add doctor start appointment logic
+        }
+        break;
+      case AppointmentStatus.inProgress:
+        // Get.toNamed(RouteName.appointmentStart);
+        break;
+      case AppointmentStatus.completed:
+        Get.toNamed(RouteName.doctorAppointmentHistoryDetailsView);
+        break;
+      case AppointmentStatus.missed:
+        // Do nothing
+        break;
+    }
+  }
+
+  // Helper to get status color
+  Color _getStatusColor(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.completed:
+        return Colors.green;
+      case AppointmentStatus.upcoming:
+        return Colors.orange;
+      case AppointmentStatus.inProgress:
+        return Colors.blue;
+      case AppointmentStatus.missed:
+        return Colors.red;
+    }
   }
 }

@@ -1,9 +1,12 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/resources/components/patient/medication_card.dart';
-import 'package:healty_ways/resources/components/patient/home_profile_card.dart';
+import 'package:healty_ways/resources/components/shared/reusable_user_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
+import 'package:healty_ways/view_model/doctors_view_model.dart';
+import 'package:healty_ways/view_model/health_records_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:healty_ways/resources/components/patient/build_calendar.dart';
@@ -12,12 +15,17 @@ class HomeView extends StatelessWidget {
   final AssignedMedicationViewModel _assignedMedicationVM =
       Get.put(AssignedMedicationViewModel());
   final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
+  final DoctorsViewModel _doctorsVM = Get.put(DoctorsViewModel());
+  final AppointmentsViewModel _appointmentsVM =
+      Get.put(AppointmentsViewModel());
+  final HealthRecordsViewModel _healthRecordsVM =
+      Get.put(HealthRecordsViewModel());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        appBarTitle: PatientHomeProfileCard(),
+        appBarTitle: ReusableUserProfileCard(),
         titleText: "",
         // leading: IconButton(
         //   icon: const Icon(
@@ -130,7 +138,7 @@ class HomeView extends StatelessWidget {
           onTap: () {
             Get.toNamed(RouteName.patientMedicationsHistory);
           },
-          color: AppColors.orangeColor,
+          color: AppColors.redColor,
         ),
         HomeButton(
           title: 'Diary Entries',
@@ -146,6 +154,20 @@ class HomeView extends StatelessWidget {
           title: 'Lab Reports',
           onTap: () {},
           color: AppColors.purpleColor,
+        ),
+        HomeButton(
+          title: 'Immunization',
+          onTap: () {
+            Get.toNamed(RouteName.patientImmunizationView);
+          },
+          color: AppColors.primaryColor,
+        ),
+        HomeButton(
+          title: 'Allergies',
+          onTap: () {
+            Get.toNamed(RouteName.patientAllergyView);
+          },
+          color: AppColors.redColor,
         ),
       ],
     );

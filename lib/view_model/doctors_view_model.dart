@@ -1,14 +1,20 @@
-import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healty_ways/model/doctor_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class DoctorsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final RxList<DoctorModel> _doctors = <DoctorModel>[].obs;
+  final RxList<DoctorModel> _allDoctors = <DoctorModel>[].obs;
+  final RxList<DoctorModel> _filteredDoctors = <DoctorModel>[].obs;
   final RxString _searchQuery = ''.obs;
+  final RxBool _isLoading = false.obs;
 
-  List<DoctorModel> get doctors => _doctors;
-  String get searchQuery => _searchQuery.value;
+  List<DoctorModel> get doctors => _filteredDoctors;
+  bool get isLoading => _isLoading.value;
+
+  // ProfileViewModel instance to get current user profile
+  final ProfileViewModel _profileViewModel = Get.find();
 
   @override
   void onInit() {
@@ -18,75 +24,68 @@ class DoctorsViewModel extends GetxController {
 
   Future<void> fetchAllDoctors() async {
     try {
-      final query = await _firestore.collection('doctors').get();
+      _isLoading.value = true;
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('role', isEqualTo: 'doctor')
+          .get();
 
-      // Type-safe document processing
-      _doctors.assignAll(query.docs.map((doc) {
-        final data = doc.data();
-        return DoctorModel.fromJson(data);
-      }).toList());
+      _allDoctors.assignAll(querySnapshot.docs.map(_convertToDoctorModel));
+      _filteredDoctors.assignAll(_allDoctors);
     } catch (e) {
-      Get.snackbar("Error", "Failed to fetch doctors: ${e.toString()}");
+      _handleError("Failed to fetch doctors", e);
+    } finally {
+      _isLoading.value = false;
     }
   }
 
   void updateSearchQuery(String query) {
     _searchQuery.value = query.toLowerCase();
-  }
-
-  List<DoctorModel> get filteredDoctors {
-    if (_searchQuery.isEmpty) return _doctors;
-
-    return _doctors
-        .where((doctor) =>
-            doctor.fullName.toLowerCase().contains(_searchQuery.value) ||
-            doctor.specialty.toLowerCase().contains(_searchQuery.value) ||
-            (doctor.location.toLowerCase().contains(_searchQuery.value)))
-        .toList();
-  }
-
-  Future<List<DoctorModel>> searchDoctorsFirestore(String query) async {
-    if (query.isEmpty) return _doctors;
-
-    try {
-      final nameQuery = await _firestore
-          .collection('doctors')
-          .where('fullName', isGreaterThanOrEqualTo: query)
-          .where('fullName', isLessThanOrEqualTo: '$query\uf8ff')
-          .get();
-
-      final specialtyQuery = await _firestore
-          .collection('doctors')
-          .where('specialty', isGreaterThanOrEqualTo: query)
-          .where('specialty', isLessThanOrEqualTo: '$query\uf8ff')
-          .get();
-
-      final locationQuery = await _firestore
-          .collection('doctors')
-          .where('location', isGreaterThanOrEqualTo: query)
-          .where('location', isLessThanOrEqualTo: '$query\uf8ff')
-          .get();
-
-      // Combine and deduplicate with type safety
-      final allDocs = [
-        ...nameQuery.docs,
-        ...specialtyQuery.docs,
-        ...locationQuery.docs
-      ];
-
-      final uniqueDocs = allDocs
-          .fold<Map<String, QueryDocumentSnapshot>>(
-              {}, (map, doc) => map..[doc.id] = doc)
-          .values
-          .toList();
-
-      return uniqueDocs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>; // Explicit cast
-        return DoctorModel.fromJson(data);
-      }).toList();
-    } catch (e) {
-      Get.snackbar("Error", "Search failed: ${e.toString()}");
-      return [];
+    if (query.isEmpty) {
+      _filteredDoctors.assignAll(_allDoctors);
+    } else {
+      _filteredDoctors.assignAll(_allDoctors.where((doctor) =>
+          (doctor.fullName.toLowerCase().contains(query)) ||
+          (doctor.specialty.toLowerCase().contains(query)) ||
+          (doctor.qualification.toLowerCase().contains(query)) ||
+          (doctor.location.toLowerCase().contains(query))));
     }
+  }
+
+  DoctorModel _convertToDoctorModel(
+      QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+    return DoctorModel.fromJson({
+      ...doc.data(),
+      'uid': doc.id,
+    });
+  }
+
+  void _handleError(String message, dynamic error) {
+    Get.snackbar("Error", "$message: ${error.toString()}");
+    debugPrint("$message: $error");
+  }
+
+  void updateDoctorSchedule(Map<String, List<AppointmentSlot>> schedule) {
+    final doctor = _profileViewModel.getRoleData<DoctorModel>();
+    if (doctor == null) return;
+
+    final updatedDoctor = DoctorModel(
+      uid: doctor.uid,
+      fullName: doctor.fullName,
+      email: doctor.email,
+      profileImage: doctor.profileImage,
+      qualification: doctor.qualification,
+      specialty: doctor.specialty,
+      location: doctor.location,
+      bio: doctor.bio,
+      ratings: doctor.ratings,
+      weeklySchedule: schedule, // New schedule update
+      assignedPatients: doctor.assignedPatients,
+    );
+
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(doctor.uid)
+        .update(updatedDoctor.toJson());
   }
 }

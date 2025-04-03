@@ -4,7 +4,7 @@ import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/auth_view_model.dart';
 
 class SignupView extends StatelessWidget {
-  final AuthViewModel _authViewModel = Get.put(AuthViewModel());
+  final AuthViewModel _authVM = Get.find<AuthViewModel>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -44,14 +44,12 @@ class SignupView extends StatelessWidget {
                 // Role Selection Buttons - Only this needs Obx since it uses selectedRole
                 Obx(() => ToggleButtons(
                       isSelected: [
-                        _authViewModel.selectedRole.value == UserRole.doctor,
-                        _authViewModel.selectedRole.value == UserRole.patient,
-                        _authViewModel.selectedRole.value ==
-                            UserRole.pharmacist,
+                        _authVM.selectedRole.value == UserRole.doctor,
+                        _authVM.selectedRole.value == UserRole.patient,
+                        _authVM.selectedRole.value == UserRole.pharmacist,
                       ],
                       onPressed: (int index) {
-                        _authViewModel.selectedRole.value =
-                            UserRole.values[index];
+                        _authVM.selectedRole.value = UserRole.values[index];
                       },
                       borderRadius: BorderRadius.circular(20),
                       selectedColor: Colors.black,
@@ -82,7 +80,7 @@ class SignupView extends StatelessWidget {
                   controller: _nameController,
                   hintText: "Full Name",
                   prefixIcon: Icon(Icons.person, color: Colors.grey),
-                  onChanged: (value) => _authViewModel.name.value = value,
+                  onChanged: (value) => _authVM.name.value = value,
                 ),
 
                 const SizedBox(height: 10),
@@ -93,7 +91,7 @@ class SignupView extends StatelessWidget {
                   hintText: "Email",
                   keyboardType: TextInputType.emailAddress,
                   prefixIcon: Icon(Icons.email, color: Colors.grey),
-                  onChanged: (value) => _authViewModel.email.value = value,
+                  onChanged: (value) => _authVM.email.value = value,
                 ),
 
                 const SizedBox(height: 10),
@@ -113,8 +111,7 @@ class SignupView extends StatelessWidget {
                         ),
                         onPressed: () => _obscurePassword.toggle(),
                       ),
-                      onChanged: (value) =>
-                          _authViewModel.password.value = value,
+                      onChanged: (value) => _authVM.password.value = value,
                     )),
 
                 const SizedBox(height: 10),
@@ -135,7 +132,7 @@ class SignupView extends StatelessWidget {
                         onPressed: () => _obscureConfirmPassword.toggle(),
                       ),
                       onChanged: (value) =>
-                          _authViewModel.confirmPassword.value = value,
+                          _authVM.confirmPassword.value = value,
                     )),
 
                 const SizedBox(height: 20),
@@ -144,12 +141,12 @@ class SignupView extends StatelessWidget {
                 Obx(() => ReuseableElevatedbutton(
                       buttonName: "Sign Up",
                       color: Colors.black,
-                      isLoading: _authViewModel.loading.value,
+                      isLoading: _authVM.loading.value,
                       onPressed: () async {
                         if (await _validateInputs()) {
-                          final success = await _authViewModel.signUp();
+                          final success = await _authVM.signUp();
                           if (success) {
-                            _navigateToHomeScreen();
+                            _authVM.navigateToHomeScreen();
                           }
                         }
                       },
@@ -173,47 +170,30 @@ class SignupView extends StatelessWidget {
   }
 
   Future<bool> _validateInputs() async {
-    if (_authViewModel.name.value.isEmpty) {
+    if (_authVM.name.value.isEmpty) {
       Get.snackbar("Error", "Please enter your name");
       return false;
     }
-    if (_authViewModel.email.value.isEmpty ||
-        !_authViewModel.email.value.isEmail) {
+    if (_authVM.email.value.isEmpty || !_authVM.email.value.isEmail) {
       Get.snackbar("Error", "Please enter a valid email");
       return false;
     }
-    if (_authViewModel.password.value.isEmpty ||
-        _authViewModel.password.value.length < 6) {
+    if (_authVM.password.value.isEmpty || _authVM.password.value.length < 6) {
       Get.snackbar("Error", "Password must be at least 6 characters");
       return false;
     }
-    if (_authViewModel.password.value != _authViewModel.confirmPassword.value) {
+    if (_authVM.password.value != _authVM.confirmPassword.value) {
       Get.snackbar("Error", "Passwords don't match");
       return false;
     }
 
     // Check if email exists
-    final emailExists =
-        await _authViewModel.isEmailExists(_authViewModel.email.value);
+    final emailExists = await _authVM.isEmailExists(_authVM.email.value);
     if (emailExists) {
       Get.snackbar("Error", "Email already registered");
       return false;
     }
 
     return true;
-  }
-
-  void _navigateToHomeScreen() {
-    switch (_authViewModel.selectedRole.value) {
-      case UserRole.doctor:
-        Get.offAllNamed(RouteName.doctorHomeView);
-        break;
-      case UserRole.patient:
-        Get.offAllNamed(RouteName.patientHome);
-        break;
-      case UserRole.pharmacist:
-        Get.offAllNamed(RouteName.pharmacyHomeView);
-        break;
-    }
   }
 }

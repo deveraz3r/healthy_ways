@@ -14,26 +14,37 @@ class ProfileViewModel extends GetxController {
   UserRole get currentRole => _currentRole.value;
 
   Future<void> fetchProfile(String uid, UserRole role) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
+    try {
+      _currentRole.value = role;
 
-    if (!doc.exists) {
+      final doc = await _firestore.collection('users').doc(uid).get();
+
+      if (!doc.exists || doc.data() == null) {
+        _profile.value = null;
+        return;
+      }
+
+      final data = doc.data()!;
+
+      // Ensure basic fields exist
+      if (data['email'] == null || data['name'] == null) {
+        throw Exception("Required user fields are missing");
+      }
+
+      switch (role) {
+        case UserRole.doctor:
+          _profile.value = DoctorModel.fromJson(data);
+          break;
+        case UserRole.patient:
+          _profile.value = PatientModel.fromJson(data);
+          break;
+        case UserRole.pharmacist:
+          // TODO: Handle pharmacist
+          break;
+      }
+    } catch (e) {
+      Get.snackbar("Profile Error", "Failed to load profile data");
       _profile.value = null;
-      return;
-    }
-
-    final data = doc.data()!;
-    _currentRole.value = role; // Store the role when fetching profile
-
-    switch (role) {
-      case UserRole.doctor:
-        _profile.value = DoctorModel.fromJson(data);
-        break;
-      case UserRole.patient:
-        _profile.value = PatientModel.fromJson(data);
-        break;
-      case UserRole.pharmacist:
-        // Handle pharmacist
-        break;
     }
   }
 

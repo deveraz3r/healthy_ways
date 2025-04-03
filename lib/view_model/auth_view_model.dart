@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:healty_ways/utils/routes/route_name.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 
 enum UserRole { doctor, patient, pharmacist }
@@ -110,20 +111,33 @@ class AuthViewModel extends GetxController {
         password: password,
       );
 
+      if (userCredential.user?.uid == null) {
+        throw Exception("User UID is null");
+      }
+
       // Fetch user document
       final userDoc = await _firestore
           .collection('users')
           .doc(userCredential.user?.uid)
           .get();
 
-      if (!userDoc.exists) {
+      if (!userDoc.exists || userDoc.data() == null) {
         await _auth.signOut();
-        Get.snackbar("Error", "User not found");
+        Get.snackbar("Error", "User document not found");
+        return false;
+      }
+
+      final data = userDoc.data()!;
+
+      // Validate required fields
+      if (data['email'] == null || data['role'] == null) {
+        await _auth.signOut();
+        Get.snackbar("Error", "User data is incomplete");
         return false;
       }
 
       // Get the stored role
-      final roleString = userDoc.data()?['role'] ?? 'patient';
+      final roleString = data['role'] as String;
       final storedRole = UserRole.values.firstWhere(
         (e) => e.toString().split('.').last == roleString,
         orElse: () => UserRole.patient,
@@ -134,7 +148,7 @@ class AuthViewModel extends GetxController {
         await _auth.signOut();
         Get.snackbar(
           "Login Failed",
-          "This email is registered as a $roleString, not as a ${selectedRole.value.toString().split('.').last}",
+          "This email is registered as a ${roleString.capitalizeFirst}, not as a ${selectedRole.value.toString().split('.').last.capitalizeFirst}",
         );
         return false;
       }
@@ -146,8 +160,11 @@ class AuthViewModel extends GetxController {
       await _profileVM.fetchProfile(userCredential.user!.uid, storedRole);
 
       return true;
+    } on FirebaseAuthException catch (e) {
+      Get.snackbar("Login Failed", e.message ?? "Authentication error");
+      return false;
     } catch (e) {
-      Get.snackbar("Login Failed", e.toString());
+      Get.snackbar("Login Failed", "An unexpected error occurred");
       return false;
     } finally {
       loading.value = false;
@@ -157,6 +174,7 @@ class AuthViewModel extends GetxController {
   Future<void> logout() async {
     await _auth.signOut();
     selectedRole.value = UserRole.patient; // Reset role on logout
+    Get.offAll(RouteName.login);
   }
 
   Future<void> resetPassword(String email) async {
@@ -165,6 +183,20 @@ class AuthViewModel extends GetxController {
       Get.snackbar("Success", "Password reset email sent");
     } catch (e) {
       Get.snackbar("Error", "Failed to send reset email: ${e.toString()}");
+    }
+  }
+
+  void navigateToHomeScreen() {
+    switch (selectedRole.value) {
+      case UserRole.doctor:
+        Get.offAllNamed(RouteName.doctorHomeView);
+        break;
+      case UserRole.patient:
+        Get.offAllNamed(RouteName.patientHome);
+        break;
+      case UserRole.pharmacist:
+        Get.offAllNamed(RouteName.pharmacyHomeView);
+        break;
     }
   }
 }

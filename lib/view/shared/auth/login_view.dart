@@ -4,7 +4,8 @@ import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/auth_view_model.dart';
 
 class LoginView extends StatelessWidget {
-  final AuthViewModel _authVM = Get.put(AuthViewModel());
+  //AuthVM is permentant so it does not get auto destroy when poping the screen
+  final AuthViewModel _authVM = Get.put(AuthViewModel(), permanent: true);
 
   LoginView({super.key});
 
@@ -116,7 +117,7 @@ class LoginView extends StatelessWidget {
                           _passwordController.text,
                         );
                         if (success) {
-                          _navigateToHomeScreen(_authVM.selectedRole.value);
+                          _authVM.navigateToHomeScreen();
                         }
                       } catch (e) {
                         // Errors are already handled in the ViewModel
@@ -139,19 +140,5 @@ class LoginView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _navigateToHomeScreen(UserRole role) {
-    switch (role) {
-      case UserRole.doctor:
-        Get.offAllNamed(RouteName.doctorHomeView);
-        break;
-      case UserRole.patient:
-        Get.offAllNamed(RouteName.patientHome);
-        break;
-      case UserRole.pharmacist:
-        Get.offAllNamed(RouteName.pharmacyHomeView);
-        break;
-    }
   }
 }

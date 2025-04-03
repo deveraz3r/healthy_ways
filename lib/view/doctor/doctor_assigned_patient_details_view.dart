@@ -12,7 +12,8 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
       <AssignedMedicationModel>[].obs;
   // final RxString profileImage = RxString(null);
   final RxString patientName = "Loading...".obs;
-  final RxString patientType = "Patient".obs;
+  final RxString patientEmail = "Loading...".obs;
+  final RxString profileImage = "assets/images/profile.jpg".obs;
 
   DoctorAssignedPatientDetailsView({super.key, required this.patientId}) {
     _loadPatientData();
@@ -23,7 +24,9 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
     if (patientData != null) {
       patient.value = patientData;
       patientName.value = patientData.fullName;
-      // profileImage.value = patientData.profileImage;
+      patientEmail.value = patientData.email;
+      profileImage.value =
+          patientData.profileImage ?? "assets/images/profile.jpg";
       // Load medications - you'll need to implement this based on your data structure
       // medications.assignAll(await _loadPatientMedications(patientId));
     }
@@ -72,9 +75,7 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
         CircleAvatar(
           radius: 50,
           backgroundImage: AssetImage(
-            //TODO: add profile image
-            // profileImage.value ?? "assets/images/profile.jpg",
-            "assets/images/profile.jpg",
+            profileImage.value,
           ),
         ),
         const SizedBox(height: 10),
@@ -83,7 +84,7 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         Text(
-          patientType.value,
+          patientEmail.value,
           style: const TextStyle(color: Colors.grey),
         ),
         const SizedBox(height: 10),

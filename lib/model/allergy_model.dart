@@ -12,7 +12,6 @@ class AllergyModel {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
         'title': title,
         'description': description,
         'patientId': patientId,
@@ -24,4 +23,13 @@ class AllergyModel {
         description: json['description'],
         patientId: json['patientId'],
       );
+
+  AllergyModel copyWith({String? id}) {
+    return AllergyModel(
+      id: id ?? this.id,
+      title: title,
+      description: description,
+      patientId: patientId,
+    );
+  }
 }

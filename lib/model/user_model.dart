@@ -18,10 +18,13 @@ class UserModel {
         'profileImage': profileImage,
       };
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        uid: json['uid'],
-        fullName: json['fullName'],
-        email: json['email'],
-        profileImage: json['profileImage'],
-      );
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      uid: json['uid'] as String? ?? '', // Handle null case
+      fullName:
+          json['name'] as String? ?? json['fullName'] as String? ?? 'No Name',
+      email: json['email'] as String? ?? '',
+      profileImage: json['profileImage'] as String?,
+    );
+  }
 }

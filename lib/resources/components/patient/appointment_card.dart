@@ -1,33 +1,34 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:intl/intl.dart'; // For time formatting
+import 'package:healty_ways/utils/routes/route_name.dart';
+import 'package:healty_ways/view_model/appointments_view_model.dart';
+import 'package:intl/intl.dart';
 
-class AppointmentCard extends StatelessWidget {
-  final String name;
-  final String profilePhoto;
-  final AppointmentStatus status;
-  final String specialty;
-  final String qualification;
-  final TimeOfDay time;
+class PatientAppointmentCard extends StatelessWidget {
+  final AppointmentModel appointment;
 
-  const AppointmentCard({
+  const PatientAppointmentCard({
     super.key,
-    required this.name,
-    required this.profilePhoto,
-    required this.status,
-    required this.specialty,
-    required this.qualification,
-    required this.time,
+    required this.appointment,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Format time to 12-hour format with AM/PM
-    final formattedTime = _formatTime(time);
+    final appointmentVM = Get.find<AppointmentsViewModel>();
+    final doctor = appointmentVM.getDoctorInfo(appointment.doctorId);
+
+    final formattedTime = DateFormat('h:mm a').format(appointment.time);
+    final timeLeft = appointment.time.difference(DateTime.now()).inMinutes;
+    final bool isStartAllowed =
+        appointment.status == AppointmentStatus.upcoming &&
+            timeLeft <= 10 &&
+            timeLeft > 0;
 
     return InkWell(
       onTap: () {
-        Get.toNamed(RouteName.patientAppointmentReport);
+        _handleNavigation();
       },
       child: Container(
         decoration: BoxDecoration(
@@ -43,83 +44,98 @@ class AppointmentCard extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: Row(
+          child: Column(
             children: [
-              // Profile Photo (Circular)
-              Container(
-                width: 45,
-                height: 45,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage(profilePhoto),
-                    fit: BoxFit.cover,
+              Row(
+                children: [
+                  // Profile Photo (Circular)
+                  Container(
+                    width: 45,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: AssetImage(
+                          doctor?.profileImage ?? "assets/images/profile.jpg",
+                        ),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Doctor Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Doctor Name and Status
+                        Row(
+                          children: [
+                            Text(
+                              doctor?.fullName ?? 'Unknown Doctor',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              appointment.status.name,
+                              style: TextStyle(
+                                color: _getStatusColor(appointment.status),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        // Qualification, Specialty, and Time
+                        Row(
+                          children: [
+                            Text(
+                              '${doctor?.qualification ?? "MD"} | ${doctor?.specialty ?? "General"}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const Spacer(),
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              formattedTime,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (isStartAllowed)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: ReuseableElevatedbutton(
+                    onPressed: () {
+                      // TODO: Implement start appointment logic
+                      Get.toNamed(
+                        RouteName.patientAppointmentStartView,
+                        arguments: appointment,
+                      );
+                    },
+                    buttonName: ("Start Appointment"),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              // Doctor Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Doctor Name and Status
-                    Row(
-                      children: [
-                        Text(
-                          name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          status.name,
-                          style: TextStyle(
-                            color: status == AppointmentStatus.completed
-                                ? AppColors.greenColor
-                                : status == AppointmentStatus.upcoming
-                                    ? AppColors.orangeColor
-                                    : AppColors.redColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    // Qualification, Specialty, and Time
-                    Row(
-                      children: [
-                        // Qualification and Specialty
-                        Text(
-                          '$qualification | $specialty',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const Spacer(),
-                        // Time Icon and Formatted Time
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          formattedTime, // Use formatted time
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
@@ -127,12 +143,39 @@ class AppointmentCard extends StatelessWidget {
     );
   }
 
-  // Helper method to format TimeOfDay to 12-hour format with AM/PM
-  String _formatTime(TimeOfDay time) {
-    final now = DateTime.now();
-    final dateTime =
-        DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    return DateFormat('h:mm a')
-        .format(dateTime); // Format as 12-hour with AM/PM
+  // Handle navigation based on appointment status
+  void _handleNavigation() {
+    switch (appointment.status) {
+      case AppointmentStatus.upcoming:
+        if (appointment.time.difference(DateTime.now()).inMinutes <= 10) {
+          // Get.toNamed(RouteName.appointmentStart); //TODO: Add start appointment
+        }
+        break;
+      case AppointmentStatus.inProgress:
+        // Get.toNamed(RouteName.appointmentStart);
+        break;
+      case AppointmentStatus.completed:
+        Get.toNamed(RouteName.doctorAppointmentHistoryDetailsView);
+        break;
+      case AppointmentStatus.missed:
+        // Do nothing
+        break;
+    }
+  }
+
+  // Helper to get color based on appointment status
+  Color _getStatusColor(AppointmentStatus status) {
+    switch (status) {
+      case AppointmentStatus.completed:
+        return Colors.green;
+      case AppointmentStatus.upcoming:
+        return Colors.orange;
+      case AppointmentStatus.inProgress:
+        return Colors.blue;
+      case AppointmentStatus.missed:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 }

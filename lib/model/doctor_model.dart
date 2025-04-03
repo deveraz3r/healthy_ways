@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:healty_ways/model/user_model.dart';
 
 class DoctorModel extends UserModel {
@@ -6,7 +7,7 @@ class DoctorModel extends UserModel {
   final String location;
   final String? bio;
   final List<RatingModel> ratings;
-  final List<DateTime> availableTimes;
+  final Map<String, List<AppointmentSlot>> weeklySchedule; // New format
   final List<String> assignedPatients;
 
   DoctorModel({
@@ -19,10 +20,10 @@ class DoctorModel extends UserModel {
     required this.location,
     this.bio,
     List<RatingModel>? ratings,
-    List<DateTime>? availableTimes,
+    Map<String, List<AppointmentSlot>>? weeklySchedule,
     List<String>? assignedPatients,
   })  : ratings = ratings ?? [],
-        availableTimes = availableTimes ?? [],
+        weeklySchedule = weeklySchedule ?? {},
         assignedPatients = assignedPatients ?? [];
 
   @override
@@ -33,33 +34,73 @@ class DoctorModel extends UserModel {
         'location': location,
         'bio': bio,
         'ratings': ratings.map((r) => r.toJson()).toList(),
-        'availableTimes':
-            availableTimes.map((t) => t.toIso8601String()).toList(),
+        'weeklySchedule': weeklySchedule.map((day, slots) => MapEntry(
+            day, slots.map((slot) => slot.toJson()).toList())), // Store as JSON
         'assignedPatients': assignedPatients,
       };
 
-  factory DoctorModel.fromJson(Map<String, dynamic> json) => DoctorModel(
-        uid: json['uid'],
-        fullName: json['fullName'],
-        email: json['email'],
-        profileImage: json['profileImage'],
-        qualification: json['qualification'],
-        specialty: json['specialty'],
-        location: json['location'] ?? '',
-        bio: json['bio'],
-        ratings: (json['ratings'] as List<dynamic>?)
-                ?.map((r) => RatingModel.fromJson(r))
-                .toList() ??
-            [],
-        availableTimes: (json['availableTimes'] as List<dynamic>?)
-                ?.map((t) => DateTime.parse(t))
-                .toList() ??
-            [],
-        assignedPatients: (json['assignedPatients'] as List<dynamic>?)
-                ?.map((p) => p.toString())
-                .toList() ??
-            [],
-      );
+  factory DoctorModel.fromJson(Map<String, dynamic> json) {
+    return DoctorModel(
+      uid: json['uid'] as String? ?? '',
+      fullName:
+          json['fullName'] as String? ?? json['name'] as String? ?? 'No Name',
+      email: json['email'] as String? ?? '',
+      profileImage: json['profileImage'] as String?,
+      qualification: json['qualification'] as String? ?? '',
+      specialty: json['specialty'] as String? ?? '',
+      location: json['location'] as String? ?? '',
+      bio: json['bio'] as String?,
+      ratings: (json['ratings'] as List<dynamic>?)
+              ?.map((r) => RatingModel.fromJson(r as Map<String, dynamic>))
+              .toList() ??
+          [],
+      weeklySchedule: (json['weeklySchedule'] as Map<String, dynamic>?)?.map(
+            (day, slots) => MapEntry(
+                day,
+                (slots as List<dynamic>)
+                    .map((slot) => AppointmentSlot.fromJson(slot))
+                    .toList()),
+          ) ??
+          {},
+      assignedPatients: (json['assignedPatients'] as List<dynamic>?)
+              ?.map((p) => p.toString())
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class AppointmentSlot {
+  final TimeOfDay startTime;
+  final TimeOfDay endTime;
+
+  AppointmentSlot({required this.startTime, required this.endTime});
+
+  Map<String, dynamic> toJson() => {
+        'startTime': _formatTime(startTime),
+        'endTime': _formatTime(endTime),
+      };
+
+  factory AppointmentSlot.fromJson(Map<String, dynamic> json) {
+    return AppointmentSlot(
+      startTime: _parseTime(json['startTime']),
+      endTime: _parseTime(json['endTime']),
+    );
+  }
+
+  static String _formatTime(TimeOfDay time) {
+    return "${time.hourOfPeriod}:${time.minute.toString().padLeft(2, '0')} ${time.period == DayPeriod.am ? 'AM' : 'PM'}";
+  }
+
+  static TimeOfDay _parseTime(String time) {
+    final parts = time.split(' ');
+    final hourMinute = parts[0].split(':');
+    int hour = int.parse(hourMinute[0]);
+    int minute = int.parse(hourMinute[1]);
+    if (parts[1] == 'PM' && hour != 12) hour += 12;
+    if (parts[1] == 'AM' && hour == 12) hour = 0;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
 }
 
 class RatingModel {

@@ -12,7 +12,6 @@ class ImmunizationModel {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
         'title': title,
         'description': description,
         'patientId': patientId,
@@ -25,4 +24,13 @@ class ImmunizationModel {
         description: json['description'],
         patientId: json['patientId'],
       );
+
+  ImmunizationModel copyWith({String? id}) {
+    return ImmunizationModel(
+      id: id ?? this.id,
+      title: title,
+      description: description,
+      patientId: patientId,
+    );
+  }
 }

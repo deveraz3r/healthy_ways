@@ -1,4 +1,4 @@
-enum EntryAddedBy { doctor, patient }
+enum EntryAddedBy { doctor, patient, pharmacist }
 
 extension EntryAddedByExtension on EntryAddedBy {
   String get value => toString().split('.').last;
@@ -8,6 +8,7 @@ class DiaryEntryModel {
   final String id;
   final String patientId;
   final String? doctorId;
+  final String? pharmacistId;
   final EntryAddedBy addedBy;
   final String title;
   final String body;
@@ -17,6 +18,7 @@ class DiaryEntryModel {
     required this.id,
     required this.patientId,
     this.doctorId,
+    this.pharmacistId,
     required this.addedBy,
     required this.title,
     required this.body,
@@ -27,6 +29,7 @@ class DiaryEntryModel {
         'id': id,
         'patientId': patientId,
         'doctorId': doctorId,
+        'pharmacistId': pharmacistId,
         'addedBy': addedBy.value,
         'title': title,
         'body': body,
@@ -38,6 +41,7 @@ class DiaryEntryModel {
         id: json['id'],
         patientId: json['patientId'],
         doctorId: json['doctorId'],
+        pharmacistId: json['pharmacistId'],
         addedBy: EntryAddedBy.values.firstWhere(
             (e) => e.value == json['addedBy'],
             orElse: () => EntryAddedBy.patient),

@@ -1,18 +1,21 @@
-import 'package:healty_ways/resources/components/doctor/doctor_home_profile_card.dart';
 import 'package:healty_ways/resources/components/shared/home_button.dart';
+import 'package:healty_ways/resources/components/shared/reusable_user_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class DoctorHomeView extends StatelessWidget {
   DoctorHomeView({super.key});
 
   final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
+  final AppointmentsViewModel _appointmentsVM =
+      Get.put(AppointmentsViewModel());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        appBarTitle: DoctorHomeProfileCard(),
+        appBarTitle: ReusableUserProfileCard(),
         titleText: "",
         actions: [
           IconButton(

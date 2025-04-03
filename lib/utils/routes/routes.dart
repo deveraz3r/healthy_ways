@@ -1,9 +1,11 @@
 import 'package:healty_ways/view/doctor/doctor_appointment_history_details_view.dart';
+import 'package:healty_ways/view/doctor/doctor_appointment_start_view.dart';
 import 'package:healty_ways/view/doctor/doctor_appointments_view.dart';
 import 'package:healty_ways/view/doctor/doctor_assigned_patients_view.dart';
 import 'package:healty_ways/view/doctor/doctor_home_view.dart';
 import 'package:healty_ways/view/doctor/doctor_profile_view.dart';
-import 'package:healty_ways/view/patient/appointment_history_view.dart';
+import 'package:healty_ways/view/patient/patient_allergy_view.dart';
+import 'package:healty_ways/view/patient/patient_appointment_history_view.dart';
 import 'package:healty_ways/view/patient/appointment_report_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_details_view.dart';
 import 'package:healty_ways/view/patient/book_doctor_view.dart';
@@ -11,6 +13,11 @@ import 'package:healty_ways/view/patient/home_view.dart';
 import 'package:healty_ways/view/patient/inventory_add_item_view.dart';
 import 'package:healty_ways/view/patient/inventory_view.dart';
 import 'package:healty_ways/view/patient/medication_history_view.dart';
+import 'package:healty_ways/view/patient/patient_appointment_start_view.dart';
+import 'package:healty_ways/view/patient/patient_book_appointment.dart';
+import 'package:healty_ways/view/patient/patient_diary_enteries_view.dart';
+import 'package:healty_ways/view/patient/patient_immunization_view.dart';
+import 'package:healty_ways/view/patient/patient_profile_view.dart';
 import 'package:healty_ways/view/patient/pharmacy_delivery_view.dart';
 import 'package:healty_ways/view/patient/request_medicne_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_home_view.dart';
@@ -82,7 +89,7 @@ class Routes {
         ),
         GetPage(
           name: RouteName.patientAppointmentHistory,
-          page: () => AppointmentHistoryView(),
+          page: () => PatientAppointmentHistoryView(),
         ),
         GetPage(
           name: RouteName.patientAppointmentReport,
@@ -96,6 +103,30 @@ class Routes {
           name: RouteName.patientBookDoctorDetails,
           page: () => BookDoctorDetailsView(),
         ),
+        GetPage(
+          name: RouteName.patientProfileView,
+          page: () => PatientProfileView(),
+        ),
+        GetPage(
+          name: RouteName.patientAppointmentStartView,
+          page: () => PatientAppointmentStartView(),
+        ),
+        GetPage(
+          name: RouteName.patientAllergyView,
+          page: () => PatientAllergyView(),
+        ),
+        GetPage(
+          name: RouteName.patientImmunizationView,
+          page: () => PatientImmunizationView(),
+        ),
+        GetPage(
+          name: RouteName.patientDiaryEnteriesView,
+          page: () => PatientDiaryEnteriesView(),
+        ),
+        // GetPage(
+        //   name: RouteName.patientBookAppointmentView,
+        //   page: () => PatientBookAppointmentView(doctor: doctor model,),
+        // ),
 
         //------------------- Doctor -------------------
 
@@ -122,6 +153,10 @@ class Routes {
         GetPage(
           name: RouteName.doctorProfileView,
           page: () => DoctorProfileView(),
+        ),
+        GetPage(
+          name: RouteName.doctorAppointmentStartView,
+          page: () => DoctorAppointmentStartView(),
         ),
 
         //------------------- Pharmacy -------------------

@@ -1,6 +1,6 @@
-import 'package:healty_ways/resources/components/doctor/doctor_home_profile_card.dart';
 import 'package:healty_ways/resources/components/pharmacy/orders_summary_chart.dart';
 import 'package:healty_ways/resources/components/shared/home_button.dart';
+import 'package:healty_ways/resources/components/shared/reusable_user_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 
@@ -13,7 +13,7 @@ class PharmacyHomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        appBarTitle: DoctorHomeProfileCard(),
+        appBarTitle: ReusableUserProfileCard(),
         titleText: "",
         actions: [
           IconButton(

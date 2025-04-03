@@ -1,7 +1,9 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view/doctor/doctor_assigned_patient_details_view.dart';
 
 class DoctorAssignedPatientTile extends StatelessWidget {
+  final String uid;
   final String name;
   final String email;
   final String? imageUrl;
@@ -11,6 +13,7 @@ class DoctorAssignedPatientTile extends StatelessWidget {
     required this.email,
     this.imageUrl,
     super.key,
+    required this.uid,
   });
 
   @override
@@ -19,7 +22,10 @@ class DoctorAssignedPatientTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: InkWell(
         onTap: () {
-          Get.toNamed(RouteName.doctorAssignedPatientDetailsView);
+          Get.to(
+            // RouteName.doctorAssignedPatientDetailsView,
+            DoctorAssignedPatientDetailsView(patientId: uid),
+          );
         },
         child: Container(
           padding: const EdgeInsets.all(12),
