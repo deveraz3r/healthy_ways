@@ -1,8 +1,11 @@
+import 'package:healty_ways/view/doctor/doctor_allergy_view.dart';
 import 'package:healty_ways/view/doctor/doctor_appointment_history_details_view.dart';
 import 'package:healty_ways/view/doctor/doctor_appointment_start_view.dart';
 import 'package:healty_ways/view/doctor/doctor_appointments_view.dart';
 import 'package:healty_ways/view/doctor/doctor_assigned_patients_view.dart';
 import 'package:healty_ways/view/doctor/doctor_home_view.dart';
+import 'package:healty_ways/view/doctor/doctor_immunization_view.dart';
+import 'package:healty_ways/view/doctor/doctor_medicine_assign_view.dart';
 import 'package:healty_ways/view/doctor/doctor_profile_view.dart';
 import 'package:healty_ways/view/patient/patient_allergy_view.dart';
 import 'package:healty_ways/view/patient/patient_appointment_history_view.dart';
@@ -26,9 +29,11 @@ import 'package:healty_ways/view/pharmacy/pharmacy_lab_records.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_orders_request_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_delivery_status_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_upload_lab_report_view.dart';
+import 'package:healty_ways/view/shared/all_medicine_view.dart';
 import 'package:healty_ways/view/shared/auth/login_view.dart';
 import 'package:healty_ways/view/shared/auth/signup_view.dart';
 import 'package:healty_ways/view/shared/chat_view.dart';
+import 'package:healty_ways/view/shared/diary_entery_view.dart';
 import 'package:healty_ways/view/shared/splash_view.dart';
 
 import '/utils/app_urls.dart';
@@ -56,6 +61,14 @@ class Routes {
         GetPage(
           name: RouteName.chatView,
           page: () => ChatView(),
+        ),
+        GetPage(
+          name: RouteName.diaryEnteryView,
+          page: () => DiaryEnteryView(),
+        ),
+        GetPage(
+          name: RouteName.allMedicinesView,
+          page: () => AllMedicineView(),
         ),
 
         //------------------- Patient -------------------
@@ -157,6 +170,18 @@ class Routes {
         GetPage(
           name: RouteName.doctorAppointmentStartView,
           page: () => DoctorAppointmentStartView(),
+        ),
+        GetPage(
+          name: RouteName.doctorAllergyView,
+          page: () => DoctorAllergyView(),
+        ),
+        GetPage(
+          name: RouteName.doctorImmunizationView,
+          page: () => DoctorImmunizationView(),
+        ),
+        GetPage(
+          name: RouteName.doctorMedicineAssignView,
+          page: () => DoctorMedicineAssignView(),
         ),
 
         //------------------- Pharmacy -------------------

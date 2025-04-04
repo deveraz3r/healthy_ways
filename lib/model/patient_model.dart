@@ -9,7 +9,7 @@ class PatientModel extends UserModel {
     required super.email,
     super.profileImage,
     this.bio,
-  });
+  }) : super(role: UserRole.patient);
 
   @override
   Map<String, dynamic> toJson() => {
@@ -17,11 +17,14 @@ class PatientModel extends UserModel {
         'bio': bio,
       };
 
-  factory PatientModel.fromJson(Map<String, dynamic> json) => PatientModel(
-        uid: json['uid'] ?? '',
-        fullName: json['fullName'] ?? json['name'] ?? 'No Name',
-        email: json['email'] ?? '',
-        profileImage: json['profileImage'],
-        bio: json['bio'],
-      );
+  factory PatientModel.fromJson(Map<String, dynamic> json) {
+    return PatientModel(
+      uid: json['uid'] as String? ?? '',
+      fullName:
+          json['fullName'] as String? ?? json['name'] as String? ?? 'No Name',
+      email: json['email'] as String? ?? '',
+      profileImage: json['profileImage'] as String?,
+      bio: json['bio'] as String?,
+    );
+  }
 }

@@ -7,7 +7,7 @@ class DoctorModel extends UserModel {
   final String location;
   final String? bio;
   final List<RatingModel> ratings;
-  final Map<String, List<AppointmentSlot>> weeklySchedule; // New format
+  final Map<String, List<AppointmentSlot>> weeklySchedule;
   final List<String> assignedPatients;
 
   DoctorModel({
@@ -24,7 +24,8 @@ class DoctorModel extends UserModel {
     List<String>? assignedPatients,
   })  : ratings = ratings ?? [],
         weeklySchedule = weeklySchedule ?? {},
-        assignedPatients = assignedPatients ?? [];
+        assignedPatients = assignedPatients ?? [],
+        super(role: UserRole.doctor);
 
   @override
   Map<String, dynamic> toJson() => {
@@ -34,8 +35,9 @@ class DoctorModel extends UserModel {
         'location': location,
         'bio': bio,
         'ratings': ratings.map((r) => r.toJson()).toList(),
-        'weeklySchedule': weeklySchedule.map((day, slots) => MapEntry(
-            day, slots.map((slot) => slot.toJson()).toList())), // Store as JSON
+        'weeklySchedule': weeklySchedule.map(
+          (day, slots) => MapEntry(day, slots.map((s) => s.toJson()).toList()),
+        ),
         'assignedPatients': assignedPatients,
       };
 
@@ -56,10 +58,12 @@ class DoctorModel extends UserModel {
           [],
       weeklySchedule: (json['weeklySchedule'] as Map<String, dynamic>?)?.map(
             (day, slots) => MapEntry(
-                day,
-                (slots as List<dynamic>)
-                    .map((slot) => AppointmentSlot.fromJson(slot))
-                    .toList()),
+              day,
+              (slots as List<dynamic>)
+                  .map((s) =>
+                      AppointmentSlot.fromJson(s as Map<String, dynamic>))
+                  .toList(),
+            ),
           ) ??
           {},
       assignedPatients: (json['assignedPatients'] as List<dynamic>?)

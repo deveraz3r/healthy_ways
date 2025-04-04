@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healty_ways/model/allergy_model.dart';
 import 'package:healty_ways/model/immunization_model.dart';
 import 'package:healty_ways/model/diary_entry_model.dart';
+import 'package:healty_ways/model/user_model.dart';
 
 class HealthRecordsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -54,15 +55,41 @@ class HealthRecordsViewModel extends GetxController {
     _immunizations.assignAll(immunizationsQuery.docs
         .map((doc) => ImmunizationModel.fromJson({...doc.data(), 'id': doc.id}))
         .toList());
+  }
+
+  Future<void> fetchDiaryEnteries(String uid, UserRole addedBy) async {
+    String collection;
+
+    switch (addedBy) {
+      case UserRole.patient:
+        collection = "patientId";
+      case UserRole.doctor:
+        collection = "doctorId";
+      case UserRole.pharmacist:
+        collection = "pharmacistId";
+    }
 
     // Fetch diary entries
     final diaryEntriesQuery = await _firestore
         .collection('diary')
-        .where('patientId', isEqualTo: patientId)
+        .where(collection, isEqualTo: uid)
         .get();
-    _diaryEntries.assignAll(diaryEntriesQuery.docs
-        .map((doc) => DiaryEntryModel.fromJson({...doc.data(), 'id': doc.id}))
-        .toList());
+
+    _diaryEntries.assignAll(
+      diaryEntriesQuery.docs
+          .map((doc) => DiaryEntryModel.fromJson({...doc.data(), 'id': doc.id}))
+          .toList(),
+    );
+  }
+
+  /// **Add DiaryEntry with Auto ID**
+  Future<void> addDiaryEntry(DiaryEntryModel diary) async {
+    String newId = await _getNextHexId('diary');
+
+    diary.id = newId;
+
+    await _firestore.collection('diary').doc(newId).set(diary.toJson());
+    _diaryEntries.add(diary.copyWith(id: newId));
   }
 
   /// **Add Allergy with Auto ID**
@@ -92,5 +119,27 @@ class HealthRecordsViewModel extends GetxController {
   Future<void> deleteImmunization(String id) async {
     await _firestore.collection('immunizations').doc(id).delete();
     _immunizations.removeWhere((i) => i.id == id);
+  }
+
+  /// **Delete Diary Enteries**
+  Future<void> deleteDiaryEntery(String id, UserRole deletedBy) async {
+    final doc = await _firestore.collection('diary').doc(id).get();
+
+    DiaryEntryModel diaryDoc = DiaryEntryModel.fromJson(doc.data()!);
+
+    if (diaryDoc.addedBy == deletedBy || deletedBy == UserRole.patient) {
+      await _firestore.collection('diary').doc(id).delete();
+      _diaryEntries.removeWhere((i) => i.id == id);
+
+      Get.snackbar(
+        "Deletion Success",
+        "Diary Entery successfully deleted!",
+      );
+    } else {
+      Get.snackbar(
+        "Can not delete",
+        "You donot have permission to delete This entery, Diary can only be deleted by the person whom added it or patient themself",
+      );
+    }
   }
 }

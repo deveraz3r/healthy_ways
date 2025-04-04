@@ -28,7 +28,6 @@ class MedicationCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 5),
             Text(
               assignedMedication.medicineName,
               style: GoogleFonts.roboto(
@@ -39,7 +38,6 @@ class MedicationCard extends StatelessWidget {
             Text(
               '${assignedMedication.medicineFormula} ${assignedMedication.medicineStockType}',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
-              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 5),
             Row(
@@ -56,7 +54,7 @@ class MedicationCard extends StatelessWidget {
             ),
             const Divider(),
             InkWell(
-              onTap: onToggle,
+              onTap: onToggle, // Toggle status on tap
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                 decoration: BoxDecoration(

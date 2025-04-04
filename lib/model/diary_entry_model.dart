@@ -1,15 +1,11 @@
-enum EntryAddedBy { doctor, patient, pharmacist }
-
-extension EntryAddedByExtension on EntryAddedBy {
-  String get value => toString().split('.').last;
-}
+import 'package:healty_ways/model/user_model.dart';
 
 class DiaryEntryModel {
-  final String id;
+  String id;
   final String patientId;
   final String? doctorId;
   final String? pharmacistId;
-  final EntryAddedBy addedBy;
+  final UserRole addedBy;
   final String title;
   final String body;
   final DateTime lastEdited;
@@ -42,11 +38,32 @@ class DiaryEntryModel {
         patientId: json['patientId'],
         doctorId: json['doctorId'],
         pharmacistId: json['pharmacistId'],
-        addedBy: EntryAddedBy.values.firstWhere(
-            (e) => e.value == json['addedBy'],
-            orElse: () => EntryAddedBy.patient),
+        addedBy: UserRole.values.firstWhere((e) => e.value == json['addedBy'],
+            orElse: () => UserRole.patient),
         title: json['title'],
         body: json['body'],
         lastEdited: DateTime.parse(json['lastEdited']),
       );
+
+  DiaryEntryModel copyWith({
+    String? id,
+    String? patientId,
+    String? doctorId,
+    String? pharmacistId,
+    UserRole? addedBy,
+    String? title,
+    String? body,
+    DateTime? lastEdited,
+  }) {
+    return DiaryEntryModel(
+      id: id ?? this.id,
+      patientId: patientId ?? this.patientId,
+      doctorId: doctorId ?? this.doctorId,
+      pharmacistId: pharmacistId ?? this.pharmacistId,
+      addedBy: addedBy ?? this.addedBy,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      lastEdited: lastEdited ?? this.lastEdited,
+    );
+  }
 }

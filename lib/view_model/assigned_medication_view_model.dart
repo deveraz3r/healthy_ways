@@ -1,82 +1,110 @@
+import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healty_ways/model/assigned_medication_model.dart';
 import 'package:healty_ways/model/medication_model.dart';
 import 'package:healty_ways/model/medicine_model.dart';
+import 'package:healty_ways/model/medicine_schedule_model.dart';
 
 class AssignedMedicationViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  final RxList<MedicineModel> availableMedicines = <MedicineModel>[].obs;
   final RxList<AssignedMedicationModel> assignedMedications =
       <AssignedMedicationModel>[].obs;
+
+  final RxList<MedicineScheduleModel> selectedSchedules =
+      <MedicineScheduleModel>[].obs;
+
   final Rx<DateTime> selectedDate = DateTime.now().obs;
 
-  Future<void> fetchPatientMedications(String patientId) async {
-    // Fetch medications
-    final medicationsQuery = await _firestore
-        .collection('medications')
-        .where('assignedTo', isEqualTo: patientId)
-        .get();
-
-    // Fetch all related medicines in one query
-    final medicationDocs = medicationsQuery.docs;
-    final medicineIds =
-        medicationDocs.map((doc) => doc['medicineId'] as String).toList();
-
-    final medicinesQuery = await _firestore
-        .collection('medicines')
-        .where(FieldPath.documentId, whereIn: medicineIds)
-        .get();
-
-    // Create a map of medicines for quick lookup
-    final medicinesMap = {
-      for (var doc in medicinesQuery.docs)
-        doc.id: MedicineModel.fromJson(doc.data())
-    };
-
-    // Combine medications with their medicines
-    assignedMedications.assignAll(medicationDocs.map((doc) {
-      final medication = MedicationModel.fromJson(doc.data());
-      final medicine = medicinesMap[medication.medicineId] ??
-          MedicineModel(
-            id: medication.medicineId,
-            name: 'Unknown Medicine',
-            formula: "100 mg",
-            stockType: '',
-            description: 'Medicine data not found',
-          );
-
-      return AssignedMedicationModel(
-        medication: medication,
-        medicine: medicine,
-      );
-    }).toList());
+  Future<void> fetchAvailableMedicines() async {
+    final querySnapshot = await _firestore.collection('medicines').get();
+    final meds = querySnapshot.docs
+        .map(
+            (doc) => MedicineModel.fromJson(doc.data()..addAll({'id': doc.id})))
+        .toList();
+    availableMedicines.assignAll(meds);
   }
 
-  Future<void> markAsTaken(String medId) async {
-    await _firestore
-        .collection('medications')
-        .doc(medId)
-        .update({'isTaken': true});
+  void addSchedule(MedicineScheduleModel schedule) {
+    final exists =
+        selectedSchedules.any((s) => s.medicine.id == schedule.medicine.id);
+    if (!exists) selectedSchedules.add(schedule);
+  }
 
-    final index =
-        assignedMedications.indexWhere((am) => am.medication.id == medId);
+  void removeSchedule(MedicineScheduleModel schedule) {
+    selectedSchedules.removeWhere((s) => s.medicine.id == schedule.medicine.id);
+  }
+
+  void updateSchedule(MedicineScheduleModel updatedSchedule) {
+    final index = selectedSchedules
+        .indexWhere((s) => s.medicine.id == updatedSchedule.medicine.id);
     if (index != -1) {
-      assignedMedications[index].medication.isTaken = true;
-      assignedMedications.refresh();
+      selectedSchedules[index] = updatedSchedule;
     }
   }
 
-  void updateSelectedDate(DateTime date) {
-    selectedDate.value = date;
+  Future<void> assignSchedulesToFirestore({
+    required String patientId,
+    required String doctorId,
+    required String patientName,
+  }) async {
+    for (var schedule in selectedSchedules) {
+      DateTime date = schedule.startDate;
+      while (!date.isAfter(schedule.endDate)) {
+        for (final time in schedule.times) {
+          final assignedDateTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+
+          final medication = MedicationModel(
+            id: _firestore.collection('medications').doc().id,
+            medicineId: schedule.medicine.id,
+            assignedTime: assignedDateTime,
+            assignedTo: patientId,
+            assignedBy: doctorId,
+            quantity: 1,
+            isTaken: false,
+          );
+
+          await _firestore
+              .collection('medications')
+              .doc(medication.id)
+              .set(medication.toJson());
+        }
+        date = date.add(const Duration(days: 1));
+      }
+    }
+
+    selectedSchedules.clear(); // Clear after successful assignment
+    Get.snackbar("Success", "Medications assigned to $patientName");
   }
 
+  // Mark as taken
+  void markAsTaken(String medicationId) {
+    final medication =
+        assignedMedications.firstWhere((med) => med.id == medicationId);
+    medication.isTaken = !medication.isTaken;
+    assignedMedications.refresh(); // Refresh to update UI
+  }
+
+  // Fetch medications for a specific date
   List<AssignedMedicationModel> getMedicationsForDate(DateTime date) {
-    return assignedMedications
-        .where((am) =>
-            am.medication.assignedTime.year == date.year &&
-            am.medication.assignedTime.month == date.month &&
-            am.medication.assignedTime.day == date.day)
-        .toList();
+    return assignedMedications.where((med) {
+      final assigned = med.assignedTime;
+      return assigned.year == date.year &&
+          assigned.month == date.month &&
+          assigned.day == date.day;
+    }).toList();
+  }
+
+  // Update the selected date
+  void updateSelectedDate(DateTime date) {
+    selectedDate.value = date;
   }
 }

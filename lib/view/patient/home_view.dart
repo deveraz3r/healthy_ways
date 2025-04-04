@@ -1,4 +1,6 @@
 import 'package:google_fonts/google_fonts.dart';
+import 'package:healty_ways/model/diary_entry_model.dart';
+import 'package:healty_ways/model/user_model.dart';
 import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/resources/components/patient/medication_card.dart';
 import 'package:healty_ways/resources/components/shared/reusable_user_profile_card.dart';
@@ -142,8 +144,16 @@ class HomeView extends StatelessWidget {
         ),
         HomeButton(
           title: 'Diary Entries',
-          onTap: () {},
-          color: AppColors.primaryColor,
+          onTap: () {
+            Get.toNamed(
+              RouteName.diaryEnteryView,
+              arguments: {
+                "profile": _profileVM.profile!,
+                "acessedBy": UserRole.patient,
+              },
+            );
+          },
+          color: AppColors.orangeColor,
         ),
         HomeButton(
           title: 'Health Tracker',
@@ -188,8 +198,8 @@ class HomeView extends StatelessWidget {
         children: medications
             .map((am) => MedicationCard(
                   assignedMedication: am,
-                  onToggle: () =>
-                      _assignedMedicationVM.markAsTaken(am.medication.id),
+                  onToggle: () => _assignedMedicationVM
+                      .markAsTaken(am.id), // Toggle medication status
                 ))
             .toList(),
       );

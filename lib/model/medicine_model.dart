@@ -1,5 +1,5 @@
 class MedicineModel {
-  final int id;
+  int id;
   final String name;
   final String formula;
   final String? description;
@@ -17,6 +17,27 @@ class MedicineModel {
     this.imageUrl,
   });
 
+  // Define the copyWith method
+  MedicineModel copyWith({
+    int? id,
+    String? name,
+    String? formula,
+    String? stockType,
+    String? description,
+    int? stock,
+    String? imageUrl,
+  }) {
+    return MedicineModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      formula: formula ?? this.formula,
+      stockType: stockType ?? this.stockType,
+      description: description ?? this.description,
+      stock: stock ?? this.stock,
+      imageUrl: imageUrl ?? this.imageUrl,
+    );
+  }
+
   // Update toJson/fromJson to include stock
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -29,7 +50,7 @@ class MedicineModel {
       };
 
   factory MedicineModel.fromJson(Map<String, dynamic> json) => MedicineModel(
-        id: json['id'],
+        id: int.tryParse(json['id']) ?? 0,
         name: json['name'],
         formula: json['dosage'],
         stockType: json['dosageType'],

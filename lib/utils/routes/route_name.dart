@@ -4,6 +4,8 @@ class RouteName {
   static const String login = "/login";
   static const String signup = "/signup";
   static const String chatView = "/chatView";
+  static const String diaryEnteryView = "/diaryEnteryView";
+  static const String allMedicinesView = "/allMedicinesView";
 
   //------------------- Patient -------------------
   static const String patientHome = "/patientHome";
@@ -38,6 +40,9 @@ class RouteName {
   static const String doctorAssignedPatientDetailsView =
       "/doctorAssignedPatientDetailsView";
   static const String doctorProfileView = "/doctorProfileView";
+  static const String doctorAllergyView = "/doctorAllergyView";
+  static const String doctorImmunizationView = "/doctorImmunizationView";
+  static const String doctorMedicineAssignView = "/doctorMedicineAssignView";
 
   //------------------- Pharmacy -------------------
   static const String pharmacyHomeView = "/pharmacyHomeView";

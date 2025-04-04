@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:healty_ways/model/user_model.dart';
 import 'package:healty_ways/utils/routes/route_name.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
-
-enum UserRole { doctor, patient, pharmacist }
 
 class AuthViewModel extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
