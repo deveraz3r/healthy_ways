@@ -1,87 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:healty_ways/resources/app_colors.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
-import 'package:intl/intl.dart';
+import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
+import 'package:healty_ways/model/medication_model.dart';
 
-// Model
-class MedicationSchedule {
-  final DateTime date;
-  final List<MedicationEntry> medications;
-  final String dayAbbreviation;
-  final String monthAbbreviation;
-
-  MedicationSchedule({
-    required this.date,
-    required this.medications,
-    required this.dayAbbreviation,
-    required this.monthAbbreviation,
-  });
-}
-
-class MedicationEntry {
-  final String name;
-  final TimeOfDay time;
-  final String status;
-  final bool isTaken;
-
-  MedicationEntry({
-    required this.name,
-    required this.time,
-    required this.status,
-    required this.isTaken,
-  });
-}
-
-// View
 class MedicationHistoryView extends StatelessWidget {
   MedicationHistoryView({super.key});
 
-  final scheduleData = [
-    MedicationSchedule(
-      date: DateTime(2023, 7, 29),
-      dayAbbreviation: '29',
-      monthAbbreviation: 'Jul',
-      medications: [
-        MedicationEntry(
-          name: 'Panadol',
-          time: TimeOfDay(hour: 8, minute: 0),
-          status: 'Missed',
-          isTaken: false,
-        ),
-        MedicationEntry(
-          name: 'Paracetamol',
-          time: TimeOfDay(hour: 13, minute: 0),
-          status: 'Missed',
-          isTaken: false,
-        ),
-      ],
-    ),
-    MedicationSchedule(
-      date: DateTime(2023, 7, 30),
-      dayAbbreviation: '30',
-      monthAbbreviation: 'Jul',
-      medications: [
-        MedicationEntry(
-          name: 'Panadol',
-          time: TimeOfDay(hour: 8, minute: 0),
-          status: 'Taken',
-          isTaken: true,
-        ),
-        MedicationEntry(
-          name: 'Paracetamol',
-          time: TimeOfDay(hour: 13, minute: 0),
-          status: 'Taken',
-          isTaken: true,
-        ),
-        MedicationEntry(
-          name: 'Dapa',
-          time: TimeOfDay(hour: 20, minute: 0),
-          status: 'Taken',
-          isTaken: true,
-        ),
-      ],
-    ),
-  ];
+  final AssignedMedicationViewModel assignedMedicationVM =
+      Get.find<AssignedMedicationViewModel>();
 
   @override
   Widget build(BuildContext context) {
@@ -90,19 +19,46 @@ class MedicationHistoryView extends StatelessWidget {
         titleText: 'Medication History',
         enableBack: true,
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: scheduleData.length,
-        separatorBuilder: (context, index) => const Divider(),
-        itemBuilder: (context, index) {
-          final schedule = scheduleData[index];
-          return _buildDateGroup(context, schedule);
-        },
-      ),
+      body: Obx(() {
+        // Get the list of medications for the selected date
+        final List<MedicationModel> medications =
+            assignedMedicationVM.assignedMedications;
+
+        // Group medications by date
+        Map<DateTime, List<MedicationModel>> groupedByDate = {};
+        for (var medication in medications) {
+          final assignedDate = DateTime(
+            medication.assignedTime.year,
+            medication.assignedTime.month,
+            medication.assignedTime.day,
+          );
+          if (!groupedByDate.containsKey(assignedDate)) {
+            groupedByDate[assignedDate] = [];
+          }
+          groupedByDate[assignedDate]?.add(medication);
+        }
+
+        // Display each group of medications by date
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: groupedByDate.keys.length,
+          separatorBuilder: (context, index) => const Divider(),
+          itemBuilder: (context, index) {
+            final date = groupedByDate.keys.elementAt(index);
+            final medicationsForDate = groupedByDate[date]!;
+
+            return _buildDateGroup(context, date, medicationsForDate);
+          },
+        );
+      }),
     );
   }
 
-  Widget _buildDateGroup(BuildContext context, MedicationSchedule schedule) {
+  Widget _buildDateGroup(
+      BuildContext context, DateTime date, List<MedicationModel> medications) {
+    final String dayAbbreviation = DateFormat('d').format(date);
+    final String monthAbbreviation = DateFormat('MMM').format(date);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -117,7 +73,7 @@ class MedicationHistoryView extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                schedule.monthAbbreviation,
+                monthAbbreviation,
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.white,
@@ -126,7 +82,7 @@ class MedicationHistoryView extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                schedule.dayAbbreviation,
+                dayAbbreviation,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -143,7 +99,7 @@ class MedicationHistoryView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                DateFormat('EEEE').format(schedule.date),
+                DateFormat('EEEE').format(date),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -151,8 +107,8 @@ class MedicationHistoryView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              ...schedule.medications
-                  .map((med) => _buildMedicationItem(context, med)),
+              // Display medications for the given date
+              ...medications.map((med) => _buildMedicationItem(context, med)),
             ],
           ),
         ),
@@ -161,7 +117,13 @@ class MedicationHistoryView extends StatelessWidget {
   }
 
   Widget _buildMedicationItem(
-      BuildContext context, MedicationEntry medication) {
+      BuildContext context, MedicationModel medication) {
+    final DateTime assignedTime = medication.assignedTime;
+    final TimeOfDay time = TimeOfDay(
+      hour: assignedTime.hour,
+      minute: assignedTime.minute,
+    );
+
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!, width: 1),
@@ -176,14 +138,14 @@ class MedicationHistoryView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "# ${medication.name}",
+                "# ${assignedMedicationVM.getMedicine(medication.medicineId).name}",
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
-                medication.status,
+                medication.isTaken ? "Taken" : "Missed",
                 style: TextStyle(
                   color: medication.isTaken ? Colors.green : Colors.red,
                   fontSize: 14,
@@ -196,7 +158,7 @@ class MedicationHistoryView extends StatelessWidget {
           Row(
             children: [
               Text(
-                medication.time.format(context),
+                DateFormat('yyyy-MM-dd – hh:mm a').format(assignedTime),
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -204,8 +166,40 @@ class MedicationHistoryView extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 10),
+          _buildCustomButton(
+            context,
+            (medication.isTaken ? 'Mark as Missed' : 'Mark as Taken'),
+            () {
+              // Mark as taken or missed
+              assignedMedicationVM.markAsTaken(medication.id);
+            },
+          ),
         ],
       ),
     );
   }
+}
+
+Widget _buildCustomButton(
+    BuildContext context, String text, VoidCallback onPressed) {
+  return GestureDetector(
+    onTap: onPressed,
+    child: Container(
+      // alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
+      ),
+    ),
+  );
 }

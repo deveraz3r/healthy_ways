@@ -1,4 +1,5 @@
 import 'package:google_fonts/google_fonts.dart';
+import 'package:healty_ways/model/assigned_medication_model.dart';
 import 'package:healty_ways/model/diary_entry_model.dart';
 import 'package:healty_ways/model/user_model.dart';
 import 'package:healty_ways/resources/components/shared/home_button.dart';
@@ -9,11 +10,14 @@ import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
 import 'package:healty_ways/view_model/doctors_view_model.dart';
 import 'package:healty_ways/view_model/health_records_view_model.dart';
+import 'package:healty_ways/view_model/inventory_view_model.dart';
+import 'package:healty_ways/view_model/medicine_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:healty_ways/resources/components/patient/build_calendar.dart';
 
 class HomeView extends StatelessWidget {
+  final MedicineViewModel _medicineVM = Get.put(MedicineViewModel());
   final AssignedMedicationViewModel _assignedMedicationVM =
       Get.put(AssignedMedicationViewModel());
   final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
@@ -22,6 +26,15 @@ class HomeView extends StatelessWidget {
       Get.put(AppointmentsViewModel());
   final HealthRecordsViewModel _healthRecordsVM =
       Get.put(HealthRecordsViewModel());
+  final InventoryViewModel _inventoryVM = Get.put(InventoryViewModel());
+
+  @override
+  void initState() {
+    // super.initState();
+    // _assignedMedicationVM.fetchAssignedMedication(_profileVM.profile!.uid);
+    _inventoryVM.initUser();
+    _inventoryVM.fetchInventory();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +128,7 @@ class HomeView extends StatelessWidget {
           color: AppColors.orangeColor,
         ),
         HomeButton(
-          title: 'Pharmacy',
+          title: 'Pharmacist',
           onTap: () {
             Get.toNamed(RouteName.patientPharmacy);
           },
@@ -197,9 +210,13 @@ class HomeView extends StatelessWidget {
         childAspectRatio: 1.25,
         children: medications
             .map((am) => MedicationCard(
-                  assignedMedication: am,
-                  onToggle: () => _assignedMedicationVM
-                      .markAsTaken(am.id), // Toggle medication status
+                  assignedMedication: AssignedMedicationModel(
+                      medication: am,
+                      medicine:
+                          _assignedMedicationVM.getMedicine(am.medicineId)),
+                  onToggle: () => _assignedMedicationVM.markAsTaken(
+                    am.id,
+                  ), // Toggle medication status
                 ))
             .toList(),
       );

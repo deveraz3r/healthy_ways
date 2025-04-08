@@ -13,7 +13,7 @@ class PharmacyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        titleText: 'Pharmacy Orders',
+        titleText: 'Orders',
         leading: IconButton(
           onPressed: () => Get.back(),
           icon: const Icon(Icons.home, color: Colors.white),

@@ -1,9 +1,16 @@
+enum OrderStatus {
+  processing,
+  inProgress,
+  completed,
+  cancelled,
+}
+
 class OrderModel {
   final String id;
   final String patientId;
   final String? pharmacistId;
   final List<String> medicineIds;
-  final DateTime orderTime;
+  final DateTime orderTime; //Date when order will be delivered
   final OrderStatus status;
   final List<OrderUpdate> updates;
   final String? address;
@@ -82,13 +89,6 @@ class OrderModel {
       address: address ?? this.address,
     );
   }
-}
-
-enum OrderStatus {
-  processing,
-  inProgress,
-  completed,
-  cancelled,
 }
 
 class OrderUpdate {

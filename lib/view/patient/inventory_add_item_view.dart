@@ -1,85 +1,112 @@
-import 'dart:math';
-
-import 'package:healty_ways/model/medicine_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/medicine_view_model.dart';
+import 'package:healty_ways/model/medicine_model.dart';
 import 'package:healty_ways/view_model/inventory_view_model.dart';
 
-class InventoryAddItemView extends StatelessWidget {
+class InventoryAddItemView extends StatefulWidget {
+  @override
+  _InventoryAddItemViewState createState() => _InventoryAddItemViewState();
+}
+
+class _InventoryAddItemViewState extends State<InventoryAddItemView> {
   final InventoryViewModel inventoryViewModel = Get.find();
+  final MedicineViewModel medicineViewModel = Get.find();
 
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _formulaController = TextEditingController();
   final _quantityController = TextEditingController();
-  final _quantityTypeController = TextEditingController();
-  final _imageUrlController = TextEditingController();
+  final _searchController = TextEditingController();
+
+  String? selectedMedicineId;
+  MedicineModel? selectedMedicine;
+
+  // Filtered list of medicines based on search input
+  RxList<MedicineModel> filteredMedicines = RxList<MedicineModel>();
+
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial filtered list to all medicines when the page loads
+    filteredMedicines.assignAll(medicineViewModel.allMedicines);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        titleText: ('Add New Medicine'),
+        titleText: ('Add Medicine to Inventory'),
         enableBack: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(labelText: 'Medicine Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the medicine name';
-                  }
-                  return null;
-                },
+        child: Column(
+          children: [
+            // Search Bar
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Search Medicine',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              TextFormField(
-                controller: _formulaController,
-                decoration: InputDecoration(labelText: 'Formula'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the formula';
-                  }
-                  return null;
-                },
+              onChanged: (query) {
+                // Filter medicines based on the search input
+                _filterMedicines(query);
+              },
+            ),
+            SizedBox(height: 16),
+
+            // Searchable List of Available Medicines
+            Obx(() {
+              return Expanded(
+                child: ListView.builder(
+                  itemCount: filteredMedicines.length,
+                  itemBuilder: (context, index) {
+                    final medicine = filteredMedicines[index];
+                    return ListTile(
+                      title: Text(medicine.name),
+                      subtitle: Text(medicine.formula),
+                      onTap: () {
+                        // Reset the quantity controller whenever a new medicine is selected
+                        _quantityController.clear();
+
+                        // Update the selected medicine details
+                        setState(() {
+                          selectedMedicineId = medicine.id;
+                          selectedMedicine = medicine;
+                        });
+                      },
+                    );
+                  },
+                ),
+              );
+            }),
+
+            // Display medicine details and the quantity input field
+            if (selectedMedicine != null) ...[
+              SizedBox(height: 16),
+              Text("Selected Medicine: ${selectedMedicine!.name}"),
+              Text("Formula: ${selectedMedicine!.formula}"),
+
+              // Quantity input field
+              Form(
+                key: _formKey,
+                child: TextFormField(
+                  controller: _quantityController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: 'Quantity'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the quantity';
+                    }
+                    return null;
+                  },
+                ),
               ),
-              TextFormField(
-                controller: _quantityController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Quantity'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the quantity';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _quantityTypeController,
-                decoration: InputDecoration(labelText: 'Quantity Type'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter the quantity type';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: InputDecoration(labelText: 'Image URL (optional)'),
-              ),
-              // SwitchListTile(
-              //   title: Text('In Stock'),
-              //   value: _isInStock,
-              //   onChanged: (value) {
-              //     _isInStock = value;
-              //   },
-              // ),
               SizedBox(height: 20),
+
+              // Add to inventory button
               Container(
                 width: double.infinity,
                 height: 45,
@@ -87,45 +114,49 @@ class InventoryAddItemView extends StatelessWidget {
                 margin: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: AppColors.primaryColor,
+                  color: Colors.blue, // Your primary color
                 ),
-                child: InkWell(
-                    onTap: () {
-                      if (_formKey.currentState!.validate()) {
-                        // Create a new Medicine object
-                        final newMedicine = MedicineModel(
-                          id: Random()
-                              .nextInt(99999999), //TODO: change to dynamic id
-                          name: _nameController.text,
-                          formula: _formulaController.text,
-                          stock: int.parse(_quantityController.text),
-                          stockType: _quantityTypeController.text,
-                          imageUrl: _imageUrlController.text.isEmpty
-                              ? null
-                              : _imageUrlController.text,
-                        );
+                child: ReuseableElevatedbutton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate() &&
+                        selectedMedicine != null) {
+                      final quantity = int.parse(_quantityController.text);
 
-                        // Add the new medicine to the inventory
-                        inventoryViewModel.inventory.add(newMedicine);
+                      // Add the selected medicine to the patient inventory
+                      inventoryViewModel.addMedicineToInventory(
+                        selectedMedicineId!,
+                        quantity,
+                      );
 
-                        // Navigate back to the inventory page
-                        Get.back();
-                      }
-                    },
-                    child: Center(
-                        child: Text(
-                      "Add Medicine",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ))),
+                      // Navigate back to the inventory page
+                      Get.back();
+                    }
+                  },
+                  buttonName: "Add to Inventory",
+                ),
               ),
             ],
-          ),
+          ],
         ),
       ),
     );
+  }
+
+  // Method to filter medicines based on search query
+  void _filterMedicines(String query) {
+    if (query.isEmpty) {
+      // If the search query is empty, show all medicines
+      setState(() {
+        filteredMedicines.assignAll(medicineViewModel.allMedicines);
+      });
+    } else {
+      // Filter medicines by name
+      setState(() {
+        filteredMedicines.assignAll(medicineViewModel.allMedicines
+            .where((medicine) =>
+                medicine.name.toLowerCase().contains(query.toLowerCase()))
+            .toList());
+      });
+    }
   }
 }

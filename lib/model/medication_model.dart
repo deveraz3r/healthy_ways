@@ -1,6 +1,6 @@
 class MedicationModel {
   final String id;
-  final int medicineId;
+  final String medicineId;
   final int quantity;
   final DateTime assignedTime;
   final String assignedTo; //patient

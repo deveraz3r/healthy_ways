@@ -95,11 +95,11 @@ class AllMedicineView extends StatelessWidget {
                   controller: stockTypeController,
                   decoration: InputDecoration(labelText: 'Stock Type'),
                 ),
-                TextField(
-                  controller: stockController,
-                  decoration: InputDecoration(labelText: 'Stock Quantity'),
-                  keyboardType: TextInputType.number,
-                ),
+                // TextField(
+                //   controller: stockController,
+                //   decoration: InputDecoration(labelText: 'Stock Quantity'),
+                //   keyboardType: TextInputType.number,
+                // ),
                 TextField(
                   controller: imageUrlController,
                   decoration: InputDecoration(labelText: 'Image URL'),
@@ -111,12 +111,12 @@ class AllMedicineView extends StatelessWidget {
             TextButton(
               onPressed: () {
                 final medicine = MedicineModel(
-                  id: 0, // Firestore will generate an ID
+                  id: "", // Firestore will generate an ID
                   name: nameController.text,
                   formula: formulaController.text,
                   description: descriptionController.text,
                   stockType: stockTypeController.text,
-                  stock: int.tryParse(stockController.text) ?? 0,
+                  // stock: int.tryParse(stockController.text) ?? 0,
                   imageUrl: imageUrlController.text,
                 );
                 // Add medicine to Firestore and list
@@ -141,8 +141,7 @@ class AllMedicineView extends StatelessWidget {
         TextEditingController(text: medicine.name);
     final TextEditingController formulaController =
         TextEditingController(text: medicine.formula);
-    final TextEditingController stockController =
-        TextEditingController(text: medicine.stock.toString());
+    // final TextEditingController stockController = TextEditingController(text: medicine.stock.toString());
     final TextEditingController descriptionController =
         TextEditingController(text: medicine.description ?? "");
     final TextEditingController stockTypeController =
@@ -174,11 +173,11 @@ class AllMedicineView extends StatelessWidget {
                   controller: stockTypeController,
                   decoration: InputDecoration(labelText: 'Stock Type'),
                 ),
-                TextField(
-                  controller: stockController,
-                  decoration: InputDecoration(labelText: 'Stock Quantity'),
-                  keyboardType: TextInputType.number,
-                ),
+                // TextField(
+                //   controller: stockController,
+                //   decoration: InputDecoration(labelText: 'Stock Quantity'),
+                //   keyboardType: TextInputType.number,
+                // ),
                 TextField(
                   controller: imageUrlController,
                   decoration: InputDecoration(labelText: 'Image URL'),
@@ -194,7 +193,7 @@ class AllMedicineView extends StatelessWidget {
                   formula: formulaController.text,
                   description: descriptionController.text,
                   stockType: stockTypeController.text,
-                  stock: int.tryParse(stockController.text) ?? 0,
+                  // stock: int.tryParse(stockController.text) ?? 0,
                   imageUrl: imageUrlController.text,
                 );
                 viewModel.updateMedicine(updatedMedicine);

@@ -1,12 +1,12 @@
 import 'package:healty_ways/resources/components/patient/inventory_medicne_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/inventory_view_model.dart';
+import 'package:healty_ways/view_model/medicine_view_model.dart';
 
 class PharmacyInventoryView extends StatelessWidget {
   PharmacyInventoryView({super.key});
 
   final InventoryViewModel _inventoryVM = Get.put(InventoryViewModel());
-  final String currentUserId = "current_user_id"; // Replace with actual user ID
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +40,11 @@ class PharmacyInventoryView extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           itemCount: _inventoryVM.inventory.length,
           itemBuilder: (context, index) {
-            final medicine = _inventoryVM.inventory[index];
+            final inventoryItem = _inventoryVM.inventory[index];
             return InventoryMedicneCard(
-              medicine: medicine,
+              medicine: Get.find<MedicineViewModel>()
+                  .getMedicine(inventoryItem.medicineId),
+              stock: inventoryItem.stock,
             );
           },
         );

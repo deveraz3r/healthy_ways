@@ -13,22 +13,6 @@ class MedicineViewModel extends GetxController {
     fetchAllMedicines(); // Ensure data is fetched when the controller is initialized
   }
 
-  // Fetch all medicines from Firestore
-  Future<void> fetchAllMedicines() async {
-    try {
-      final querySnapshot = await _firestore.collection('medicines').get();
-      final medicines = querySnapshot.docs.map((doc) {
-        return MedicineModel.fromJson(
-          doc.data()..addAll({'id': int.tryParse(doc.id) ?? 0}),
-        );
-      }).toList();
-
-      allMedicines.assignAll(medicines);
-    } catch (e) {
-      print('Error fetching medicines: $e');
-    }
-  }
-
   // Get the next available id by finding the maximum id in the Firestore collection
   Future<int> getNextId() async {
     final querySnapshot = await _firestore.collection('medicines').get();
@@ -44,54 +28,96 @@ class MedicineViewModel extends GetxController {
     return maxId + 1; // Return the next id
   }
 
-  // Add new medicine to Firestore
-  Future<void> addMedicine(MedicineModel medicine) async {
-    // Get the next available ID
-    final nextId = await getNextId();
+  // Fetch all medicines
+  Future<void> fetchAllMedicines() async {
+    try {
+      final querySnapshot = await _firestore.collection('medicines').get();
 
-    // Create the medicine with the new ID
-    final newMedicine = medicine.copyWith(id: nextId);
+      final medicines = querySnapshot.docs
+          .map((doc) => MedicineModel.fromJson(doc.data()..['id'] = doc['id']))
+          .toList();
+
+      print('Found ${querySnapshot.docs.length} medicine documents');
+
+      allMedicines.assignAll(medicines);
+
+      for (var med in allMedicines) {
+        print("Medicine: ${med.id}");
+      }
+    } catch (e) {
+      print('Error fetching medicines: $e');
+    }
+  }
+
+// Add medicine
+  Future<void> addMedicine(MedicineModel medicine) async {
+    final nextId = await getNextId();
+    final newMedicine = medicine.copyWith(id: nextId.toString());
 
     try {
-      // Add the medicine to Firestore
-      await _firestore.collection('medicines').add(newMedicine.toJson());
-
-      // Add the new medicine to the local list
+      await _firestore
+          .collection('medicines')
+          .add(newMedicine.toJson()); // No need to track docId
       allMedicines.add(newMedicine);
     } catch (e) {
       print('Error adding medicine: $e');
     }
   }
 
-  // Delete a medicine from Firestore
+// Delete by custom ID
   Future<void> deleteMedicine(MedicineModel medicine) async {
     try {
-      await _firestore
+      final snapshot = await _firestore
           .collection('medicines')
-          .doc(medicine.id.toString())
-          .delete();
-      allMedicines.remove(medicine); // Remove from the list
+          .where('id', isEqualTo: medicine.id)
+          .get();
+
+      for (var doc in snapshot.docs) {
+        await _firestore.collection('medicines').doc(doc.id).delete();
+      }
+
+      allMedicines.removeWhere((m) => m.id == medicine.id);
     } catch (e) {
       print('Error deleting medicine: $e');
     }
   }
 
-  // Update a medicine in Firestore
+// Update by custom ID
   Future<void> updateMedicine(MedicineModel medicine) async {
     try {
-      await _firestore
+      final snapshot = await _firestore
           .collection('medicines')
-          .doc(medicine.id.toString())
-          .update(medicine.toJson());
+          .where('id', isEqualTo: medicine.id)
+          .get();
 
-      // Find and update the medicine in the list
+      for (var doc in snapshot.docs) {
+        await _firestore
+            .collection('medicines')
+            .doc(doc.id)
+            .update(medicine.toJson());
+      }
+
       final index = allMedicines.indexWhere((m) => m.id == medicine.id);
       if (index != -1) {
         allMedicines[index] = medicine;
-        allMedicines.refresh(); // Refresh to update UI
+        allMedicines.refresh();
       }
     } catch (e) {
       print('Error updating medicine: $e');
     }
+  }
+
+  MedicineModel getMedicine(String medicineId) {
+    // Find the medicine from the loaded list where the ID matches
+    return allMedicines.firstWhere(
+      (medicine) => medicine.id == medicineId,
+      orElse: () => MedicineModel(
+        id: 'default',
+        name: 'Unknown',
+        formula: '',
+        stockType: '',
+        // stock: 0,
+      ), // Return a default model if not found
+    );
   }
 }

@@ -4,6 +4,7 @@ import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/model/doctor_model.dart';
 import 'package:healty_ways/model/patient_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
+import "assigned_medication_view_model.dart";
 
 class AppointmentsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -77,6 +78,8 @@ class AppointmentsViewModel extends GetxController {
       // Update the observable list
       _appointments.assignAll(fetchedAppointments);
       isInitial.value = false;
+
+      await processingUpdates();
     } catch (e) {
       Get.snackbar("Error", "Failed to fetch appointments: ${e.toString()}");
     }
@@ -125,5 +128,68 @@ class AppointmentsViewModel extends GetxController {
     } catch (e) {
       Get.snackbar("Error", "Failed to book appointment: ${e.toString()}");
     }
+  }
+
+  Future<void> updateAppointmentStatus(
+    AppointmentModel appointment,
+    AppointmentStatus newStatus,
+  ) async {
+    try {
+      final query = await _firestore
+          .collection('appointments')
+          .where('doctorId', isEqualTo: appointment.doctorId)
+          .where('patientId', isEqualTo: appointment.patientId)
+          .where('time', isEqualTo: appointment.time.toIso8601String())
+          .limit(1)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        final docRef = query.docs.first.reference;
+        await docRef.update({'status': newStatus.value});
+
+        // Update locally
+        final index = _appointments.indexWhere((a) =>
+            a.doctorId == appointment.doctorId &&
+            a.patientId == appointment.patientId &&
+            a.time == appointment.time);
+
+        if (index != -1) {
+          _appointments[index] =
+              _appointments[index].copyWith(status: newStatus);
+        }
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to update appointment status");
+    }
+  }
+
+  Future<void> processingUpdates() async {
+    for (var appointment in _appointments) {
+      final now = DateTime.now();
+      final timeDiff = now.difference(appointment.time).inMinutes;
+
+      // Case 1: Upcoming but missed
+      if (appointment.status == AppointmentStatus.upcoming && timeDiff > 30) {
+        await updateAppointmentStatus(appointment, AppointmentStatus.missed);
+      }
+
+      // Case 2: In progress but should be completed
+      if (appointment.status == AppointmentStatus.inProgress && timeDiff > 30) {
+        await updateAppointmentStatus(appointment, AppointmentStatus.completed);
+      }
+    }
+  }
+
+  Future<void> completeAppointmentWithReport(String appointmentId) async {
+    final report =
+        Get.find<AssignedMedicationViewModel>().generateMedicationReport();
+
+    await FirebaseFirestore.instance
+        .collection('appointments')
+        .doc(appointmentId)
+        .update({
+      'status': 'completed',
+      'report': report,
+    });
   }
 }

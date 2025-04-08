@@ -1,23 +1,23 @@
 class InventoryModel {
   final String medicineId;
-  final int stock;
-  final String patientId;
+  int stock;
+  final String userId;
 
   InventoryModel({
     required this.medicineId,
     required this.stock,
-    required this.patientId,
+    required this.userId,
   });
 
   Map<String, dynamic> toJson() => {
         'medicineId': medicineId,
         'stock': stock,
-        'patientId': patientId,
+        'userId': userId,
       };
 
   factory InventoryModel.fromJson(Map<String, dynamic> json) => InventoryModel(
         medicineId: json['medicineId'],
         stock: json['stock'],
-        patientId: json['patientId'],
+        userId: json['userId'],
       );
 }

@@ -28,12 +28,13 @@ class _BuildCalendarState extends State<BuildCalendar> {
   // Generate a list of weeks (each week is a list of days)
   List<List<DateTime>> _generateWeeks() {
     final List<List<DateTime>> weeks = [];
-    DateTime startDate = DateTime.now()
-        .subtract(const Duration(days: 30)); // Start from 30 days ago
-    DateTime endDate = DateTime.now(); // End at the current date
+    DateTime startDate =
+        DateTime.now().subtract(const Duration(days: 30)); // 30 days ago
+    DateTime endDate =
+        DateTime.now().add(const Duration(days: 30)); // 30 days ahead
 
     for (DateTime date = startDate;
-        date.isBefore(endDate);
+        !date.isAfter(endDate);
         date = date.add(const Duration(days: 1))) {
       if (date.weekday == DateTime.sunday || weeks.isEmpty) {
         weeks.add([]); // Start a new week

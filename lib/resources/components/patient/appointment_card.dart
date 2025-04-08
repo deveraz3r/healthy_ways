@@ -20,11 +20,16 @@ class PatientAppointmentCard extends StatelessWidget {
     final doctor = appointmentVM.getDoctorInfo(appointment.doctorId);
 
     final formattedTime = DateFormat('h:mm a').format(appointment.time);
-    final timeLeft = appointment.time.difference(DateTime.now()).inMinutes;
-    final bool isStartAllowed =
-        appointment.status == AppointmentStatus.upcoming &&
-            timeLeft <= 10 &&
-            timeLeft > 0;
+    final timeDiff = DateTime.now().difference(appointment.time);
+    final timeDiffMinutes = timeDiff.inMinutes;
+
+    final bool withinStartWindow =
+        timeDiffMinutes >= -10 && timeDiffMinutes <= 30;
+
+    final bool showStartButton =
+        appointment.status == AppointmentStatus.upcoming && withinStartWindow;
+    final bool showResumeButton =
+        appointment.status == AppointmentStatus.inProgress && withinStartWindow;
 
     return InkWell(
       onTap: () {
@@ -48,7 +53,7 @@ class PatientAppointmentCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  // Profile Photo (Circular)
+                  // Profile Photo
                   Container(
                     width: 45,
                     height: 45,
@@ -64,12 +69,11 @@ class PatientAppointmentCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Doctor Details
+                  // Doctor Info
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Doctor Name and Status
                         Row(
                           children: [
                             Text(
@@ -91,7 +95,6 @@ class PatientAppointmentCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        // Qualification, Specialty, and Time
                         Row(
                           children: [
                             Text(
@@ -122,18 +125,27 @@ class PatientAppointmentCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (isStartAllowed)
+              if (showStartButton || showResumeButton)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: ReuseableElevatedbutton(
-                    onPressed: () {
-                      // TODO: Implement start appointment logic
+                    onPressed: () async {
+                      // ✅ Update status from upcoming → inProgress
+                      if (appointment.status == AppointmentStatus.upcoming) {
+                        await appointmentVM.updateAppointmentStatus(
+                          appointment,
+                          AppointmentStatus.inProgress,
+                        );
+                      }
+
                       Get.toNamed(
                         RouteName.patientAppointmentStartView,
                         arguments: appointment,
                       );
                     },
-                    buttonName: ("Start Appointment"),
+                    buttonName: showResumeButton
+                        ? "Resume Appointment"
+                        : "Start Appointment",
                   ),
                 ),
             ],
@@ -143,27 +155,27 @@ class PatientAppointmentCard extends StatelessWidget {
     );
   }
 
-  // Handle navigation based on appointment status
   void _handleNavigation() {
+    final timeDiffMinutes =
+        DateTime.now().difference(appointment.time).inMinutes;
     switch (appointment.status) {
       case AppointmentStatus.upcoming:
-        if (appointment.time.difference(DateTime.now()).inMinutes <= 10) {
-          // Get.toNamed(RouteName.appointmentStart); //TODO: Add start appointment
+        if (timeDiffMinutes >= -10 && timeDiffMinutes <= 30) {
+          // Will be handled by button
         }
         break;
       case AppointmentStatus.inProgress:
-        // Get.toNamed(RouteName.appointmentStart);
+        // Will be handled by resume
         break;
       case AppointmentStatus.completed:
         Get.toNamed(RouteName.doctorAppointmentHistoryDetailsView);
         break;
       case AppointmentStatus.missed:
-        // Do nothing
+        // No action
         break;
     }
   }
 
-  // Helper to get color based on appointment status
   Color _getStatusColor(AppointmentStatus status) {
     switch (status) {
       case AppointmentStatus.completed:
@@ -174,8 +186,6 @@ class PatientAppointmentCard extends StatelessWidget {
         return Colors.blue;
       case AppointmentStatus.missed:
         return Colors.red;
-      default:
-        return Colors.grey;
     }
   }
 }

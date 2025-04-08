@@ -3,15 +3,17 @@ import 'package:healty_ways/model/medicine_model.dart';
 
 class InventoryMedicneCard extends StatelessWidget {
   final MedicineModel medicine;
+  final int stock;
 
   const InventoryMedicneCard({
     super.key,
     required this.medicine,
+    required this.stock,
   });
 
   @override
   Widget build(BuildContext context) {
-    bool isInStock = medicine.stock <= 0 ? false : true;
+    bool isInStock = stock <= 0 ? false : true;
 
     return Container(
       decoration: BoxDecoration(
@@ -66,7 +68,7 @@ class InventoryMedicneCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      "${medicine.stock.toString()} ${medicine.stockType}",
+                      "${stock.toString()} ${medicine.stockType}",
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[600],

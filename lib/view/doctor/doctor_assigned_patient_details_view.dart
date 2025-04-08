@@ -1,6 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healty_ways/model/assigned_medication_model.dart';
+import 'package:healty_ways/model/medication_model.dart';
+import 'package:healty_ways/model/medicine_model.dart';
 import 'package:healty_ways/model/patient_model.dart';
+import 'package:healty_ways/model/user_model.dart';
+import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/appointments_view_model.dart';
+import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
+import 'package:healty_ways/view_model/health_records_view_model.dart';
 import 'package:healty_ways/view_model/patients_view_model.dart';
 import 'package:intl/intl.dart';
 
@@ -15,6 +23,12 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
   final RxString patientEmail = "Loading...".obs;
   final RxString profileImage = "assets/images/profile.jpg".obs;
 
+  final AppointmentsViewModel _appointmentsVm = Get.find();
+  final AssignedMedicationViewModel _assignMedsVM =
+      Get.put(AssignedMedicationViewModel());
+  final HealthRecordsViewModel _healthRecordsVM =
+      Get.put(HealthRecordsViewModel());
+
   DoctorAssignedPatientDetailsView({super.key, required this.patientId}) {
     _loadPatientData();
   }
@@ -27,8 +41,50 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
       patientEmail.value = patientData.email;
       profileImage.value =
           patientData.profileImage ?? "assets/images/profile.jpg";
-      // Load medications - you'll need to implement this based on your data structure
-      // medications.assignAll(await _loadPatientMedications(patientId));
+
+      // Load patient medications
+      await _loadPatientMedications(patientId);
+    }
+  }
+
+  Future<void> _loadPatientMedications(String patientId) async {
+    try {
+      medications.clear();
+
+      // Fetch medications assigned to this patient
+      final medicationsSnapshot = await FirebaseFirestore.instance
+          .collection('medications')
+          .where('assignedTo', isEqualTo: patientId)
+          .orderBy('assignedTime', descending: true)
+          .get();
+
+      // Fetch all medicines for reference
+      final medicinesSnapshot =
+          await FirebaseFirestore.instance.collection('medicines').get();
+
+      // Create a map of medicineId to MedicineModel for quick lookup
+      final medicinesMap = {
+        for (var doc in medicinesSnapshot.docs)
+          doc['id'].toString(): MedicineModel.fromJson(doc.data())
+      };
+
+      // Combine the data
+      for (var medDoc in medicationsSnapshot.docs) {
+        final medication = MedicationModel.fromJson(medDoc.data());
+        final medicine = medicinesMap[medication.medicineId.toString()];
+
+        if (medicine != null) {
+          medications.add(AssignedMedicationModel(
+            medication: medication,
+            medicine: medicine,
+          ));
+        }
+      }
+
+      medications.refresh();
+    } catch (e) {
+      print('Error loading medications: $e');
+      Get.snackbar('Error', 'Failed to load medications');
     }
   }
 
@@ -39,6 +95,13 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
         titleText: "Patient Details",
         enableBack: true,
         actions: [
+          Padding(
+            padding: const EdgeInsets.all(5),
+            child: IconButton(
+              onPressed: () => _loadPatientMedications(patientId),
+              icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(5),
             child: IconButton(
@@ -57,6 +120,9 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
               children: [
                 // Patient Profile Section
                 _buildPatientProfileSection(),
+                const SizedBox(height: 20),
+
+                _buildGridButtons(),
                 const SizedBox(height: 20),
 
                 // Medication List Section
@@ -88,21 +154,6 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
           style: const TextStyle(color: Colors.grey),
         ),
         const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: () {
-            //TODO: add update med page
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),
-          child: const Text(
-            "Update Medicine",
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
       ],
     );
   }
@@ -110,7 +161,14 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
   Widget _buildMedicationListView() {
     if (medications.isEmpty) {
       return const Center(
-        child: Text("No medications assigned yet"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.medication, size: 50, color: Colors.grey),
+            SizedBox(height: 10),
+            Text("No medications assigned yet"),
+          ],
+        ),
       );
     }
 
@@ -121,26 +179,29 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
       groupedMeds.putIfAbsent(date, () => []).add(med);
     }
 
-    return ListView(
-      children: groupedMeds.entries.map((entry) {
-        final date = entry.key;
-        final meds = entry.value;
-        final total = meds.length;
-        final takenCount = meds.where((m) => m.isTaken).length;
+    return RefreshIndicator(
+      onRefresh: () => _loadPatientMedications(patientId),
+      child: ListView(
+        children: groupedMeds.entries.map((entry) {
+          final date = entry.key;
+          final meds = entry.value;
+          final total = meds.length;
+          final takenCount = meds.where((m) => m.isTaken).length;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Date Header with Count
-            _buildDateHeader(date, takenCount, total),
-            const SizedBox(height: 10),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Date Header with Count
+              _buildDateHeader(date, takenCount, total),
+              const SizedBox(height: 10),
 
-            // Horizontal Scroll of Medication Cards
-            _buildMedicationCards(meds),
-            const SizedBox(height: 20),
-          ],
-        );
-      }).toList(),
+              // Horizontal Scroll of Medication Cards
+              _buildMedicationCards(meds),
+              const SizedBox(height: 20),
+            ],
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -173,85 +234,189 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
         children: meds
             .map((med) => Padding(
                   padding: const EdgeInsets.only(right: 10),
-                  child: MedicationCard(assignedMedication: med),
+                  child: MedicationCard(
+                    assignedMedication: med,
+                    onStatusChanged: () => _toggleMedicationStatus(med),
+                  ),
                 ))
             .toList(),
       ),
     );
   }
+
+  Widget _buildGridButtons() {
+    final PatientModel? patient = _appointmentsVm.getPatientInfo(patientId);
+
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      childAspectRatio: 4,
+      padding: EdgeInsets.zero,
+      children: [
+        HomeButton(
+          title: 'Allergies',
+          onTap: () {
+            Get.toNamed(
+              RouteName.doctorAllergyView,
+              arguments: {
+                "patientId": patient!.uid,
+                "patientName": patient!.fullName,
+              },
+            );
+          },
+          color: AppColors.orangeColor,
+        ),
+        HomeButton(
+          title: 'Immunization',
+          onTap: () {
+            Get.toNamed(
+              RouteName.doctorImmunizationView,
+              arguments: {
+                "patientId": patient!.uid,
+                "patientName": patient.fullName,
+              },
+            );
+          },
+          color: AppColors.primaryColor,
+        ),
+        HomeButton(
+          title: 'Vitals',
+          onTap: () {},
+          color: AppColors.blueColor,
+        ),
+        HomeButton(
+          title: 'Diary Notes',
+          onTap: () {
+            Get.toNamed(
+              RouteName.diaryEnteryView,
+              arguments: {
+                "profile": patient!,
+                "acessedBy": UserRole.doctor,
+              },
+            );
+          },
+          color: AppColors.purpleColor,
+        ),
+        HomeButton(
+          title: 'Lab Reports',
+          onTap: () {},
+          color: AppColors.redColor,
+        ),
+        HomeButton(
+          title: 'Update Medicine',
+          onTap: () {
+            Get.toNamed(
+              RouteName.doctorMedicineAssignView,
+              arguments: {
+                "patientId": patient!.uid,
+                "patientName": patient.fullName,
+              },
+            );
+          },
+          color: AppColors.purpleColor,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _toggleMedicationStatus(
+      AssignedMedicationModel assignedMed) async {
+    try {
+      // Update in Firestore
+      await FirebaseFirestore.instance
+          .collection('medications')
+          .doc(assignedMed.id)
+          .update({'isTaken': !assignedMed.isTaken});
+
+      // Update local state
+      assignedMed.isTaken = !assignedMed.isTaken;
+      medications.refresh();
+    } catch (e) {
+      print('Error updating medication status: $e');
+      Get.snackbar('Error', 'Failed to update medication status');
+    }
+  }
 }
 
 class MedicationCard extends StatelessWidget {
   final AssignedMedicationModel assignedMedication;
+  final VoidCallback? onStatusChanged;
 
-  const MedicationCard({required this.assignedMedication, super.key});
+  const MedicationCard({
+    required this.assignedMedication,
+    this.onStatusChanged,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 5,
-            spreadRadius: 2,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Medicine Name
-          Text(
-            assignedMedication.medicineName,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 5),
-
-          // Medicine Formula
-          Text(
-            assignedMedication.medicineFormula,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 5),
-
-          // Assigned Time
-          Row(
-            children: [
-              const Icon(Icons.access_time, size: 14, color: Colors.grey),
-              const SizedBox(width: 5),
-              Text(
-                DateFormat('h:mm a').format(assignedMedication.assignedTime),
-                style: const TextStyle(fontSize: 12),
+    return GestureDetector(
+      onTap: onStatusChanged,
+      child: Container(
+        width: 120,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 5,
+              spreadRadius: 2,
+              offset: const Offset(0, 2),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Medicine Name
+            Text(
+              assignedMedication.medicineName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 5),
+            // Medicine Formula
+            Text(
+              assignedMedication.medicineFormula,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 5),
+            // Assigned Time
+            Row(
+              children: [
+                const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                const SizedBox(width: 5),
+                Text(
+                  DateFormat('h:mm a').format(assignedMedication.assignedTime),
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            // Status Indicator
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
+              decoration: BoxDecoration(
+                color: assignedMedication.isTaken
+                    ? AppColors.greenColor
+                    : AppColors.redColor,
+                borderRadius: BorderRadius.circular(20),
               ),
-            ],
-          ),
-          const SizedBox(height: 5),
-
-          // Status Indicator
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
-            decoration: BoxDecoration(
-              color: assignedMedication.isTaken
-                  ? AppColors.greenColor
-                  : AppColors.redColor,
-              borderRadius: BorderRadius.circular(20),
+              child: Text(
+                assignedMedication.isTaken ? "Taken" : "Missed",
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
             ),
-            child: Text(
-              assignedMedication.isTaken ? "Taken" : "Missed",
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

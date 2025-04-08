@@ -1,6 +1,9 @@
-import 'package:healty_ways/view_model/inventory_view_model.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:healty_ways/resources/components/patient/inventory_medicne_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/inventory_view_model.dart';
+import 'package:healty_ways/view_model/medicine_view_model.dart';
 
 class InventoryView extends StatelessWidget {
   InventoryView({super.key});
@@ -12,7 +15,6 @@ class InventoryView extends StatelessWidget {
     return Scaffold(
       appBar: ReusableAppBar(
         titleText: "Inventory",
-        // enableBack: true,
         leading: IconButton(
           onPressed: () => Get.back(),
           icon: Icon(
@@ -36,15 +38,22 @@ class InventoryView extends StatelessWidget {
         ],
       ),
       body: Obx(() {
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: inventoryViewModel.inventory.length,
-          itemBuilder: (context, index) {
-            final medicine = inventoryViewModel.inventory[index];
-            return InventoryMedicneCard(
-              medicine: medicine,
-            );
+        return RefreshIndicator(
+          onRefresh: () async {
+            await inventoryViewModel.fetchInventory(); // refresh inventory
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: inventoryViewModel.inventory.length,
+            itemBuilder: (context, index) {
+              final inventoryItem = inventoryViewModel.inventory[index];
+              return InventoryMedicneCard(
+                medicine: Get.find<MedicineViewModel>()
+                    .getMedicine(inventoryItem.medicineId),
+                stock: inventoryItem.stock,
+              );
+            },
+          ),
         );
       }),
     );

@@ -4,6 +4,7 @@ import 'package:healty_ways/model/medicine_model.dart';
 import 'package:healty_ways/model/medicine_schedule_model.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/resources/widgets/reusable_elevated_button.dart';
+import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +20,7 @@ class DoctorMedicineAssignView extends StatefulWidget {
 class _DoctorMedicineAssignViewState extends State<DoctorMedicineAssignView> {
   final AssignedMedicationViewModel assignedVM = Get.find();
   final ProfileViewModel _profileVM = Get.find();
+  final AppointmentsViewModel _appointmentsVM = Get.find();
   final String patientId = Get.arguments['patientId'];
   final String patientName = Get.arguments['patientName'];
 
@@ -229,7 +231,8 @@ class _DoctorMedicineAssignViewState extends State<DoctorMedicineAssignView> {
                             ),
                           ],
                         ),
-                        trailing: Column(
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min, // Shrink-wrap the row
                           children: [
                             IconButton(
                               icon: const Icon(Icons.edit),
@@ -247,11 +250,14 @@ class _DoctorMedicineAssignViewState extends State<DoctorMedicineAssignView> {
                 ),
               ),
               ReuseableElevatedbutton(
-                onPressed: () => assignedVM.assignSchedulesToFirestore(
-                  patientId: patientId,
-                  doctorId: _profileVM.profile!.uid,
-                  patientName: patientName,
-                ),
+                onPressed: () async {
+                  assignedVM.assignSchedulesToFirestore(
+                    patientId: patientId,
+                    doctorId: _profileVM.profile!.uid,
+                    patientName: patientName,
+                  );
+                  await _appointmentsVM.completeAppointmentWithReport();
+                },
                 buttonName: "Assign Medications",
               ),
               const SizedBox(height: 10),
