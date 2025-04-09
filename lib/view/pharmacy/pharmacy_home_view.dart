@@ -90,13 +90,6 @@ class PharmacyHomeView extends StatelessWidget {
           },
           color: AppColors.orangeColor,
         ),
-        // HomeButton(
-        //   title: 'Dlivery Status',
-        //   onTap: () {
-        //     Get.toNamed(RouteName.pharmacyDeliveryStatusView);
-        //   },
-        //   color: AppColors.blueColor,
-        // ),
         HomeButton(
           title: 'Inventory',
           onTap: () async {
@@ -111,6 +104,13 @@ class PharmacyHomeView extends StatelessWidget {
             Get.toNamed(RouteName.pharmacyLabRecords);
           },
           color: AppColors.redColor,
+        ),
+        HomeButton(
+          title: 'Medicines',
+          onTap: () {
+            Get.toNamed(RouteName.allMedicinesView);
+          },
+          color: AppColors.blueColor,
         ),
       ],
     );

@@ -28,14 +28,19 @@ class OrderViewModel extends GetxController {
   ) async {
     try {
       final newOrder = OrderModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        patientId: order.patientId,
-        pharmacistId: order.pharmacistId,
-        medicines: order.medicines,
-        orderTime: order.orderTime,
-        status: OrderStatus.processing,
-        address: order.address,
-      );
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          patientId: order.patientId,
+          pharmacistId: order.pharmacistId,
+          medicines: order.medicines,
+          orderTime: order.orderTime,
+          status: OrderStatus.processing,
+          address: order.address,
+          updates: [
+            OrderUpdate(
+              timestamp: DateTime.now(),
+              message: 'Order Created By Pharmacist',
+            )
+          ]);
 
       await _firestore
           .collection('orders')
@@ -65,10 +70,6 @@ class OrderViewModel extends GetxController {
       orders.sort((a, b) => b.orderTime.compareTo(a.orderTime));
 
       _orders.assignAll(orders);
-
-      for (var _order in _orders) {
-        print("Order: ${_order}");
-      }
     } catch (e) {
       Get.snackbar("Error", e.toString());
     }
@@ -144,5 +145,94 @@ class OrderViewModel extends GetxController {
       status: OrderStatus.processing,
       address: '',
     );
+  }
+
+  Future<void> patientAcceptOrder(OrderModel order) async {
+    final statusStr = OrderModel.orderStatusToString(OrderStatus.inProgress);
+
+    await _firestore.collection('orders').doc(order.id).update({
+      'status': statusStr,
+      'updates': FieldValue.arrayUnion([
+        {
+          'timestamp': DateTime.now().toIso8601String(),
+          'message': 'Order Accepted By patient'
+        }
+      ])
+    });
+
+    final index = _orders.indexWhere((o) => o.id == order.id);
+    if (index != -1) {
+      _orders[index] = _orders[index].copyWith(status: OrderStatus.inProgress);
+      _orders.refresh();
+    }
+  }
+
+  Future<void> patientDenyOrder(OrderModel order) async {
+    final statusStr = OrderModel.orderStatusToString(OrderStatus.cancelled);
+
+    await _firestore.collection('orders').doc(order.id).update({
+      'status': statusStr,
+      'updates': FieldValue.arrayUnion([
+        {
+          'timestamp': DateTime.now().toIso8601String(),
+          'message': 'Order Rejected By patient'
+        }
+      ])
+    });
+
+    final index = _orders.indexWhere((o) => o.id == order.id);
+    if (index != -1) {
+      _orders[index] = _orders[index].copyWith(status: OrderStatus.cancelled);
+      _orders.refresh();
+    }
+  }
+
+  Future<void> sendOrderUpdate(String orderId, String message) async {
+    try {
+      final update = {
+        'timestamp': DateTime.now().toIso8601String(),
+        'message': message,
+      };
+
+      await _firestore.collection('orders').doc(orderId).update({
+        'updates': FieldValue.arrayUnion([update])
+      });
+
+      final index = _orders.indexWhere((o) => o.id == orderId);
+      if (index != -1) {
+        final existingUpdates = List<OrderUpdate>.from(_orders[index].updates);
+        existingUpdates.add(OrderUpdate(
+          message: message,
+          timestamp: DateTime.now(),
+        ));
+
+        _orders[index] = _orders[index].copyWith(updates: existingUpdates);
+        _orders.refresh();
+      }
+
+      Get.snackbar("Update Sent", "Message has been added to the order.");
+    } catch (e) {
+      Get.snackbar("Error", "Failed to send update: $e");
+    }
+  }
+
+  void pharmacistCancleOrder(OrderModel order) async {
+    final statusStr = OrderModel.orderStatusToString(OrderStatus.cancelled);
+
+    await _firestore.collection('orders').doc(order.id).update({
+      'status': statusStr,
+      'updates': FieldValue.arrayUnion([
+        {
+          'timestamp': DateTime.now().toIso8601String(),
+          'message': 'Order Cancled by pharmacist'
+        }
+      ])
+    });
+
+    final index = _orders.indexWhere((o) => o.id == order.id);
+    if (index != -1) {
+      _orders[index] = _orders[index].copyWith(status: OrderStatus.cancelled);
+      _orders.refresh();
+    }
   }
 }

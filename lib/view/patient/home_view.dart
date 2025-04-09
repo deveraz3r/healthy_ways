@@ -14,6 +14,7 @@ import 'package:healty_ways/view_model/health_records_view_model.dart';
 import 'package:healty_ways/view_model/inventory_view_model.dart';
 import 'package:healty_ways/view_model/medicine_view_model.dart';
 import 'package:healty_ways/view_model/order_view_model.dart';
+import 'package:healty_ways/view_model/pharmacist_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:healty_ways/resources/components/patient/build_calendar.dart';
@@ -30,6 +31,7 @@ class HomeView extends StatelessWidget {
       Get.put(HealthRecordsViewModel());
   final InventoryViewModel _inventoryVM = Get.put(InventoryViewModel());
   final OrderViewModel _orderVM = Get.put(OrderViewModel());
+  final PharmacistsViewModel _pharmacistsVM = Get.put(PharmacistsViewModel());
 
   @override
   void initState() {

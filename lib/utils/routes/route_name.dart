@@ -3,6 +3,7 @@ class RouteName {
   static const String splash = "/";
   static const String login = "/login";
   static const String signup = "/signup";
+  static const String chatsListView = "/chatsListView";
   static const String chatView = "/chatView";
   static const String diaryEnteryView = "/diaryEnteryView";
   static const String allMedicinesView = "/allMedicinesView";
@@ -12,6 +13,7 @@ class RouteName {
   static const String patientInventory = "/patientInventory";
   static const String patientInventoryAddItem = "/patientInventoryAddItem";
   static const String patientOrdersView = "/patientOrdersView";
+  static const String patientOrdersDetailsView = "/patientOrdersDetailsView";
   static const String patientDliveryStatus = "/patientDliveryStatus";
   static const String patientRequestMedication = "/patientRequestMedication";
   static const String patientRequestMedicineCheckout =
@@ -25,6 +27,8 @@ class RouteName {
   static const String patientAllergyView = "/patientAllergyView";
   static const String patientImmunizationView = "/patientImmunizationView";
   static const String patientDiaryEnteriesView = "/patientDiaryEnteriesView";
+  static const String patientContactPharmacistView =
+      "/patientContactPharmacistView";
   static const String patientAppointmentStartView =
       "/patientAppointmentStartView";
   static const String patientBookAppointmentView =
@@ -52,6 +56,8 @@ class RouteName {
   static const String pharmacistCreateOrderView = "/pharmacistCreateOrderView";
   static const String pharmacyInventoryAddItem = "/pharmacyInventoryAddItem";
   static const String pharmacistProfileView = "/pharmacistProfileView";
+  static const String pharmacistOrderDetailsView =
+      "/pharmacistOrderDetailsView";
   static const String doctorAppointmentStartView =
       "/doctorAppointmentStartView";
   static const String pharmacyDeliveryStatusView =

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healty_ways/model/order_model.dart';
-import 'package:healty_ways/model/patient_model.dart';
 import 'package:healty_ways/model/pharmacist_model.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/utils/routes/route_name.dart';
@@ -40,7 +39,9 @@ class PatientOrdersView extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-            onPressed: () => {Get.toNamed(RouteName.patientRequestMedication)},
+            onPressed: () => {
+              Get.toNamed(RouteName.patientContactPharmacistView),
+            },
           ),
         ],
       ),
@@ -163,8 +164,7 @@ class PatientOrdersView extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        _getActionButton(order.status) ??
-                            const SizedBox.shrink(),
+                        _getActionButton(order) ?? const SizedBox.shrink(),
                       ],
                     ),
                   ],
@@ -299,15 +299,17 @@ class PatientOrdersView extends StatelessWidget {
     }
   }
 
-  Widget? _getActionButton(OrderStatus status) {
-    switch (status) {
+  Widget? _getActionButton(OrderModel order) {
+    // String patientId = Get.find<ProfileViewModel>().profile?.uid ?? "null";
+
+    switch (order.status) {
       case OrderStatus.processing:
         return Row(
           children: [
             CustomElevatedButton(
               text: "Accept",
               onPressed: () {
-                // Handle order cancellation
+                orderVM.patientAcceptOrder(order);
               },
               color: Colors.green,
             ),
@@ -315,7 +317,7 @@ class PatientOrdersView extends StatelessWidget {
             CustomElevatedButton(
               text: "Deny",
               onPressed: () {
-                // Handle order cancellation
+                orderVM.patientDenyOrder(order);
               },
               color: Colors.red,
             ),
@@ -325,7 +327,10 @@ class PatientOrdersView extends StatelessWidget {
         return CustomElevatedButton(
           text: "Status",
           onPressed: () {
-            // Handle order status update
+            Get.toNamed(
+              RouteName.patientOrdersDetailsView,
+              arguments: order,
+            );
           },
           color: Colors.orange,
         );
@@ -333,7 +338,10 @@ class PatientOrdersView extends StatelessWidget {
         return CustomElevatedButton(
           text: "View Report",
           onPressed: () {
-            // Navigate to order report
+            Get.toNamed(
+              RouteName.patientOrdersDetailsView,
+              arguments: order,
+            );
           },
           color: Colors.green,
         );
@@ -345,7 +353,7 @@ class PatientOrdersView extends StatelessWidget {
 
 class CustomElevatedButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final void Function() onPressed;
   final Color color;
 
   const CustomElevatedButton({

@@ -12,9 +12,13 @@ class AllMedicineView extends StatelessWidget {
     return Scaffold(
       appBar: ReusableAppBar(
         titleText: "All Medicines",
+        enableBack: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
             onPressed: () {
               // Show a dialog to add new medicine
               _showAddMedicineDialog(context);

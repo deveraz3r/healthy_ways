@@ -161,8 +161,7 @@ class PharmacyOrdersRequestView extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        _getActionButton(order.status) ??
-                            const SizedBox.shrink(),
+                        _getActionButton(order) ?? const SizedBox.shrink(),
                       ],
                     ),
                   ],
@@ -297,12 +296,14 @@ class PharmacyOrdersRequestView extends StatelessWidget {
     }
   }
 
-  Widget? _getActionButton(OrderStatus status) {
-    switch (status) {
+  Widget? _getActionButton(OrderModel order) {
+    switch (order.status) {
       case OrderStatus.processing:
         return CustomElevatedButton(
           text: "Cancel Order",
-          onPressed: () {},
+          onPressed: () {
+            Get.find<OrderViewModel>().pharmacistCancleOrder(order);
+          },
           color: Colors.red,
         );
       // return null;
@@ -310,7 +311,7 @@ class PharmacyOrdersRequestView extends StatelessWidget {
         return CustomElevatedButton(
           text: "Update Status",
           onPressed: () {
-            // Get.toNamed(RouteName.finishOrderView)
+            Get.toNamed(RouteName.pharmacistOrderDetailsView, arguments: order);
           },
           color: Colors.orange,
         );
@@ -318,7 +319,7 @@ class PharmacyOrdersRequestView extends StatelessWidget {
         return CustomElevatedButton(
           text: "View Report",
           onPressed: () {
-            // Get.toNamed(RouteName.orderReportView)
+            Get.toNamed(RouteName.pharmacistOrderDetailsView, arguments: order);
           },
           color: Colors.green,
         );
@@ -330,7 +331,7 @@ class PharmacyOrdersRequestView extends StatelessWidget {
         // );
         return null;
       default:
-        return const SizedBox();
+        return null;
     }
   }
 }
