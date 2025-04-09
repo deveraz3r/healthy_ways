@@ -5,6 +5,7 @@ extension AppointmentStatusExtension on AppointmentStatus {
 }
 
 class AppointmentModel {
+  String appointmentId;
   final String doctorId;
   final String patientId;
   final DateTime time;
@@ -12,6 +13,7 @@ class AppointmentModel {
   final String? report;
 
   AppointmentModel({
+    required this.appointmentId,
     required this.doctorId,
     required this.patientId,
     required this.time,
@@ -20,6 +22,7 @@ class AppointmentModel {
   });
 
   Map<String, dynamic> toJson() => {
+        'appointmentId': appointmentId,
         'doctorId': doctorId,
         'patientId': patientId,
         'time': time.toIso8601String(),
@@ -29,6 +32,7 @@ class AppointmentModel {
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) =>
       AppointmentModel(
+        appointmentId: json['appointmentId'],
         doctorId: json['doctorId'],
         patientId: json['patientId'],
         time: DateTime.parse(json['time']),
@@ -39,12 +43,14 @@ class AppointmentModel {
       );
 
   AppointmentModel copyWith({
+    String? appointmentId,
     String? doctorId,
     String? patientId,
     DateTime? time,
     AppointmentStatus? status,
   }) {
     return AppointmentModel(
+      appointmentId: appointmentId ?? this.appointmentId,
       doctorId: doctorId ?? this.doctorId,
       patientId: patientId ?? this.patientId,
       time: time ?? this.time,

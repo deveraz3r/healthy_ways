@@ -168,7 +168,10 @@ class PatientAppointmentCard extends StatelessWidget {
         // Will be handled by resume
         break;
       case AppointmentStatus.completed:
-        Get.toNamed(RouteName.doctorAppointmentHistoryDetailsView);
+        Get.toNamed(
+          RouteName.patientAppointmentReport,
+          arguments: appointment.report,
+        );
         break;
       case AppointmentStatus.missed:
         // No action

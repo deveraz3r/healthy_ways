@@ -66,7 +66,7 @@ class LoginView extends StatelessWidget {
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text("Pharmacy"),
+                        child: Text("Pharmacist"),
                       ),
                     ],
                   ),

@@ -101,7 +101,7 @@ class DateGroupCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${order.medicineIds.length} items',
+              '${order.medicines.length} items',
               style: TextStyle(color: Colors.grey[600]),
             ),
             Text(

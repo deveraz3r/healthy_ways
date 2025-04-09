@@ -163,8 +163,7 @@ class ReusableUserProfileCard extends StatelessWidget {
         Get.toNamed(RouteName.patientProfileView);
         break;
       case UserRole.pharmacist:
-        //TODO: handle pharmacist profile settings
-        // Get.toNamed(RouteName.pharmacistProfileView);
+        Get.toNamed(RouteName.pharmacistProfileView);
         break;
     }
   }

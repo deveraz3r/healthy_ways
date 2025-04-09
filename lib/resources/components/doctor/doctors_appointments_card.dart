@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/utils/routes/route_name.dart';
 import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:intl/intl.dart';
 
@@ -14,11 +17,16 @@ class DoctorsAppointmentsCard extends StatelessWidget {
     final patient = appointmentVM.getPatientInfo(appointment.patientId);
 
     final formattedTime = DateFormat('h:mm a').format(appointment.time);
-    final timeLeft = appointment.time.difference(DateTime.now()).inMinutes;
-    final bool isStartAllowed =
-        appointment.status == AppointmentStatus.upcoming &&
-            timeLeft <= 10 &&
-            timeLeft > 0;
+    final timeDiff = DateTime.now().difference(appointment.time);
+    final timeDiffMinutes = timeDiff.inMinutes;
+
+    final bool withinStartWindow =
+        timeDiffMinutes >= -10 && timeDiffMinutes <= 30;
+
+    final bool showStartButton =
+        appointment.status == AppointmentStatus.upcoming && withinStartWindow;
+    final bool showResumeButton =
+        appointment.status == AppointmentStatus.inProgress && withinStartWindow;
 
     return InkWell(
       onTap: () {
@@ -106,18 +114,28 @@ class DoctorsAppointmentsCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (isStartAllowed)
+            // Buttons for start or resume appointment
+            if (showStartButton || showResumeButton)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: ReuseableElevatedbutton(
-                  onPressed: () {
-                    // TODO: Implement start appointment logic for doctor
+                  onPressed: () async {
+                    // Update status from upcoming → inProgress for doctors
+                    if (appointment.status == AppointmentStatus.upcoming) {
+                      await appointmentVM.updateAppointmentStatus(
+                        appointment,
+                        AppointmentStatus.inProgress,
+                      );
+                    }
+
                     Get.toNamed(
                       RouteName.doctorAppointmentStartView,
                       arguments: appointment,
                     );
                   },
-                  buttonName: ("Start Appointment"),
+                  buttonName: showResumeButton
+                      ? "Resume Appointment"
+                      : "Start Appointment",
                 ),
               ),
           ],
@@ -128,21 +146,25 @@ class DoctorsAppointmentsCard extends StatelessWidget {
 
   // Handle navigation based on appointment status
   void _handleNavigation() {
+    final timeDiffMinutes =
+        DateTime.now().difference(appointment.time).inMinutes;
     switch (appointment.status) {
       case AppointmentStatus.upcoming:
-        if (appointment.time.difference(DateTime.now()).inMinutes <= 10) {
-          //navigation handled in start button
-          // Get.toNamed(RouteName.appointmentStart); // TODO: Add doctor start appointment logic
+        if (timeDiffMinutes >= -10 && timeDiffMinutes <= 30) {
+          // Will be handled by button
         }
         break;
       case AppointmentStatus.inProgress:
-        // Get.toNamed(RouteName.appointmentStart);
+        // Will be handled by resume
         break;
       case AppointmentStatus.completed:
-        Get.toNamed(RouteName.doctorAppointmentHistoryDetailsView);
+        Get.toNamed(
+          RouteName.doctorAppointmentHistoryDetailsView,
+          arguments: appointment,
+        );
         break;
       case AppointmentStatus.missed:
-        // Do nothing
+        // No action
         break;
     }
   }

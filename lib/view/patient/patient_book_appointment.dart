@@ -271,6 +271,7 @@ class _PatientBookAppointmentViewState
       return;
     }
     final appointment = AppointmentModel(
+      appointmentId: "", //generated in viewModel
       doctorId: widget.doctor.uid,
       patientId: patientId,
       time: slot,

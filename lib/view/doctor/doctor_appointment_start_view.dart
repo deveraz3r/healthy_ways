@@ -118,6 +118,7 @@ class DoctorAppointmentStartView extends StatelessWidget {
               arguments: {
                 "patientId": patient!.uid,
                 "patientName": patient.fullName,
+                "appointmentId": appointment.appointmentId,
               },
             );
           },

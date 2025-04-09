@@ -1,6 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:healty_ways/model/order_model.dart';
 import 'package:healty_ways/model/patient_model.dart';
-import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/model/pharmacist_model.dart';
+import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
+import 'package:healty_ways/utils/routes/route_name.dart';
 import 'package:healty_ways/view_model/medicine_view_model.dart';
 import 'package:healty_ways/view_model/order_view_model.dart';
 import 'package:healty_ways/view_model/patients_view_model.dart';
@@ -8,35 +12,36 @@ import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
-class PharmacyOrdersRequestView extends StatelessWidget {
-  final OrderViewModel _orderVM = Get.put(OrderViewModel());
-  final PatientsViewModel _patientsVM = Get.put(PatientsViewModel());
+class PatientOrdersView extends StatelessWidget {
+  final OrderViewModel orderVM = Get.put(OrderViewModel());
+  final PatientsViewModel patientsVM = Get.put(PatientsViewModel());
 
-  PharmacyOrdersRequestView({super.key});
+  PatientOrdersView({super.key});
 
   Future<void> _refreshOrders() async {
-    await _orderVM.fetchUserOrders(
-      Get.find<ProfileViewModel>().profile?.uid ?? "",
-      false,
-    );
+    String? profileUid = Get.find<ProfileViewModel>().profile!.uid;
+
+    if (profileUid != null) {
+      await orderVM.fetchUserOrders(profileUid, true);
+    } else {
+      Get.snackbar("Error", "Profile is is not loaded yet");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: ReusableAppBar(
-        titleText: "Orders",
+        titleText: 'Orders',
         leading: IconButton(
           onPressed: () => Get.back(),
           icon: const Icon(Icons.home, color: Colors.white),
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              Get.toNamed(RouteName.pharmacistCreateOrderView);
-            },
-            icon: const Icon(Icons.add, color: Colors.white),
-          )
+            icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+            onPressed: () => {Get.toNamed(RouteName.patientRequestMedication)},
+          ),
         ],
       ),
       body: Padding(
@@ -44,22 +49,18 @@ class PharmacyOrdersRequestView extends StatelessWidget {
         child: Obx(() {
           return RefreshIndicator(
             onRefresh: _refreshOrders,
-            child: _orderVM.orders.isEmpty
+            child: orderVM.orders.isEmpty
                 ? SingleChildScrollView(
-                    // <-- Wrap Center with SingleChildScrollView
-                    physics:
-                        const AlwaysScrollableScrollPhysics(), // Ensures scrolling even when empty
+                    physics: const AlwaysScrollableScrollPhysics(),
                     child: SizedBox(
-                      height: MediaQuery.of(context).size.height *
-                          0.8, // Takes most of the screen
-                      child:
-                          const Center(child: Text("No order requests found")),
+                      height: MediaQuery.of(context).size.height * 0.8,
+                      child: const Center(child: Text("No orders found")),
                     ),
                   )
                 : ListView.builder(
-                    itemCount: _orderVM.orders.length,
+                    itemCount: orderVM.orders.length,
                     itemBuilder: (context, index) {
-                      final order = _orderVM.orders[index];
+                      final order = orderVM.orders[index];
                       return _buildOrderCard(order);
                     },
                   ),
@@ -70,8 +71,9 @@ class PharmacyOrdersRequestView extends StatelessWidget {
   }
 
   Widget _buildOrderCard(OrderModel order) {
-    return FutureBuilder<PatientModel?>(
-      future: _patientsVM.getPatientDetails(order.patientId),
+    return FutureBuilder<PharmacistModel?>(
+      future: Get.find<ProfileViewModel>()
+          .getProfileDataById<PharmacistModel>(order.pharmacistId!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoadingCard();
@@ -81,10 +83,10 @@ class PharmacyOrdersRequestView extends StatelessWidget {
           return Center(child: Text('Error: ${snapshot.error}'));
         }
 
-        final patient = snapshot.data;
+        final pharmacist = snapshot.data;
 
-        if (patient == null) {
-          return const Center(child: Text('Patient not found'));
+        if (pharmacist == null) {
+          return const Center(child: Text('Pharmacist not found'));
         }
 
         Color statusColor = _getStatusColor(order.status);
@@ -106,13 +108,13 @@ class PharmacyOrdersRequestView extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 15,
-                          backgroundImage: patient.profileImage != null
-                              ? NetworkImage(patient.profileImage!)
+                          backgroundImage: pharmacist.profileImage != null
+                              ? NetworkImage(pharmacist.profileImage!)
                               : const AssetImage("assets/images/profile.jpg")
                                   as ImageProvider,
                         ),
                         const SizedBox(width: 5),
-                        Text(patient.fullName ?? "Unknown"),
+                        Text(pharmacist.fullName ?? "Unknown"),
                         Spacer(),
                         Text(
                           DateFormat('MM-dd-yyyy hh:mm a')
@@ -134,7 +136,7 @@ class PharmacyOrdersRequestView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    name.toString(),
+                                    name,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -300,17 +302,30 @@ class PharmacyOrdersRequestView extends StatelessWidget {
   Widget? _getActionButton(OrderStatus status) {
     switch (status) {
       case OrderStatus.processing:
-        return CustomElevatedButton(
-          text: "Cancel Order",
-          onPressed: () {},
-          color: Colors.red,
+        return Row(
+          children: [
+            CustomElevatedButton(
+              text: "Accept",
+              onPressed: () {
+                // Handle order cancellation
+              },
+              color: Colors.green,
+            ),
+            SizedBox(width: 5),
+            CustomElevatedButton(
+              text: "Deny",
+              onPressed: () {
+                // Handle order cancellation
+              },
+              color: Colors.red,
+            ),
+          ],
         );
-      // return null;
       case OrderStatus.inProgress:
         return CustomElevatedButton(
-          text: "Update Status",
+          text: "Status",
           onPressed: () {
-            // Get.toNamed(RouteName.finishOrderView)
+            // Handle order status update
           },
           color: Colors.orange,
         );
@@ -318,19 +333,12 @@ class PharmacyOrdersRequestView extends StatelessWidget {
         return CustomElevatedButton(
           text: "View Report",
           onPressed: () {
-            // Get.toNamed(RouteName.orderReportView)
+            // Navigate to order report
           },
           color: Colors.green,
         );
       case OrderStatus.cancelled:
-        // return CustomElevatedButton(
-        //   text: "Order Canceled",
-        //   onPressed: () {},
-        //   color: Colors.red,
-        // );
         return null;
-      default:
-        return const SizedBox();
     }
   }
 }

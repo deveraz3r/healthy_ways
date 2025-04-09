@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healty_ways/model/doctor_model.dart';
 import 'package:healty_ways/model/patient_model.dart';
+import 'package:healty_ways/model/pharmacist_model.dart';
 import 'package:healty_ways/model/user_model.dart';
 import 'package:healty_ways/view_model/auth_view_model.dart';
 
@@ -31,6 +32,8 @@ class ProfileViewModel extends GetxController {
         throw Exception("Required user fields are missing");
       }
 
+      print("Profile Uid: ${profile?.uid}");
+
       switch (role) {
         case UserRole.doctor:
           _profile.value = DoctorModel.fromJson(data);
@@ -39,7 +42,7 @@ class ProfileViewModel extends GetxController {
           _profile.value = PatientModel.fromJson(data);
           break;
         case UserRole.pharmacist:
-          // TODO: Handle pharmacist
+          _profile.value = PharmacistModel.fromJson(data);
           break;
       }
     } catch (e) {
@@ -59,6 +62,28 @@ class ProfileViewModel extends GetxController {
       return _profile.value as T;
     }
     return null;
+  }
+
+  Future<T?> getProfileDataById<T extends UserModel>(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (!doc.exists) return null;
+
+      final data = doc.data()!;
+
+      if (T == PharmacistModel) {
+        return PharmacistModel.fromJson(data) as T;
+      } else if (T == DoctorModel) {
+        return DoctorModel.fromJson(data) as T;
+      } else if (T == PatientModel) {
+        return PatientModel.fromJson(data) as T;
+      }
+
+      throw Exception('Unsupported model type');
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+      return null;
+    }
   }
 
   Future<void> updateProfile(UserModel updatedProfile) async {

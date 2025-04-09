@@ -4,7 +4,7 @@ import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/model/doctor_model.dart';
 import 'package:healty_ways/model/patient_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
-import "assigned_medication_view_model.dart";
+import 'assigned_medication_view_model.dart';
 
 class AppointmentsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -42,7 +42,10 @@ class AppointmentsViewModel extends GetxController {
       List<AppointmentModel> fetchedAppointments = [];
 
       for (final doc in query.docs) {
-        final appointment = AppointmentModel.fromJson(doc.data());
+        final data = doc.data();
+        data['appointmentId'] = doc.id; // Attach the Firestore doc ID
+
+        final appointment = AppointmentModel.fromJson(data);
         fetchedAppointments.add(appointment);
 
         // Fetch doctor info if not already cached
@@ -103,18 +106,14 @@ class AppointmentsViewModel extends GetxController {
         appointment.time.day,
       );
 
-      if (!grouped.containsKey(date)) {
-        grouped[date] = [];
-      }
+      grouped.putIfAbsent(date, () => []);
       grouped[date]!.add(appointment);
     }
 
-    // Sort appointments within each date in descending order (latest first)
     grouped.forEach((key, list) {
-      list.sort((a, b) => b.time.compareTo(a.time)); // Reverse order
+      list.sort((a, b) => b.time.compareTo(a.time));
     });
 
-    // Sort dates in descending order (latest first)
     final sortedMap = Map.fromEntries(
         grouped.entries.toList()..sort((a, b) => b.key.compareTo(a.key)));
 
@@ -123,7 +122,10 @@ class AppointmentsViewModel extends GetxController {
 
   Future<void> bookAppointment(AppointmentModel appointment) async {
     try {
-      await _firestore.collection('appointments').add(appointment.toJson());
+      final docRef = _firestore.collection('appointments').doc();
+      appointment.appointmentId = docRef.id;
+
+      await docRef.set(appointment.toJson());
       _appointments.add(appointment);
     } catch (e) {
       Get.snackbar("Error", "Failed to book appointment: ${e.toString()}");
@@ -135,28 +137,17 @@ class AppointmentsViewModel extends GetxController {
     AppointmentStatus newStatus,
   ) async {
     try {
-      final query = await _firestore
-          .collection('appointments')
-          .where('doctorId', isEqualTo: appointment.doctorId)
-          .where('patientId', isEqualTo: appointment.patientId)
-          .where('time', isEqualTo: appointment.time.toIso8601String())
-          .limit(1)
-          .get();
+      final docRef =
+          _firestore.collection('appointments').doc(appointment.appointmentId);
 
-      if (query.docs.isNotEmpty) {
-        final docRef = query.docs.first.reference;
-        await docRef.update({'status': newStatus.value});
+      await docRef.update({'status': newStatus.value});
 
-        // Update locally
-        final index = _appointments.indexWhere((a) =>
-            a.doctorId == appointment.doctorId &&
-            a.patientId == appointment.patientId &&
-            a.time == appointment.time);
+      final index = _appointments.indexWhere(
+        (a) => a.appointmentId == appointment.appointmentId,
+      );
 
-        if (index != -1) {
-          _appointments[index] =
-              _appointments[index].copyWith(status: newStatus);
-        }
+      if (index != -1) {
+        _appointments[index] = _appointments[index].copyWith(status: newStatus);
       }
     } catch (e) {
       Get.snackbar("Error", "Failed to update appointment status");
@@ -168,12 +159,10 @@ class AppointmentsViewModel extends GetxController {
       final now = DateTime.now();
       final timeDiff = now.difference(appointment.time).inMinutes;
 
-      // Case 1: Upcoming but missed
       if (appointment.status == AppointmentStatus.upcoming && timeDiff > 30) {
         await updateAppointmentStatus(appointment, AppointmentStatus.missed);
       }
 
-      // Case 2: In progress but should be completed
       if (appointment.status == AppointmentStatus.inProgress && timeDiff > 30) {
         await updateAppointmentStatus(appointment, AppointmentStatus.completed);
       }
@@ -184,12 +173,17 @@ class AppointmentsViewModel extends GetxController {
     final report =
         Get.find<AssignedMedicationViewModel>().generateMedicationReport();
 
-    await FirebaseFirestore.instance
-        .collection('appointments')
-        .doc(appointmentId)
-        .update({
-      'status': 'completed',
+    await _firestore.collection('appointments').doc(appointmentId).update({
+      'status': AppointmentStatus.completed.value,
       'report': report,
     });
+
+    final index =
+        _appointments.indexWhere((a) => a.appointmentId == appointmentId);
+    if (index != -1) {
+      _appointments[index] = _appointments[index].copyWith(
+        status: AppointmentStatus.completed,
+      );
+    }
   }
 }

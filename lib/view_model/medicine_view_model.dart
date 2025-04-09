@@ -6,6 +6,7 @@ class MedicineViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final RxList<MedicineModel> allMedicines = <MedicineModel>[].obs;
+  final RxList<MedicineModel> filteredMedicines = <MedicineModel>[].obs;
 
   @override
   void onInit() {
@@ -28,7 +29,7 @@ class MedicineViewModel extends GetxController {
     return maxId + 1; // Return the next id
   }
 
-  // Fetch all medicines
+  // Fetch all medicines from Firestore
   Future<void> fetchAllMedicines() async {
     try {
       final querySnapshot = await _firestore.collection('medicines').get();
@@ -41,6 +42,9 @@ class MedicineViewModel extends GetxController {
 
       allMedicines.assignAll(medicines);
 
+      // Initially, set the filtered list as the same as the original list
+      filteredMedicines.assignAll(allMedicines);
+
       for (var med in allMedicines) {
         print("Medicine: ${med.id}");
       }
@@ -49,7 +53,7 @@ class MedicineViewModel extends GetxController {
     }
   }
 
-// Add medicine
+  // Add medicine
   Future<void> addMedicine(MedicineModel medicine) async {
     final nextId = await getNextId();
     final newMedicine = medicine.copyWith(id: nextId.toString());
@@ -59,12 +63,13 @@ class MedicineViewModel extends GetxController {
           .collection('medicines')
           .add(newMedicine.toJson()); // No need to track docId
       allMedicines.add(newMedicine);
+      filteredMedicines.add(newMedicine); // Add to the filtered list as well
     } catch (e) {
       print('Error adding medicine: $e');
     }
   }
 
-// Delete by custom ID
+  // Delete medicine by custom ID
   Future<void> deleteMedicine(MedicineModel medicine) async {
     try {
       final snapshot = await _firestore
@@ -77,12 +82,14 @@ class MedicineViewModel extends GetxController {
       }
 
       allMedicines.removeWhere((m) => m.id == medicine.id);
+      filteredMedicines.removeWhere(
+          (m) => m.id == medicine.id); // Remove from filtered list as well
     } catch (e) {
       print('Error deleting medicine: $e');
     }
   }
 
-// Update by custom ID
+  // Update medicine by custom ID
   Future<void> updateMedicine(MedicineModel medicine) async {
     try {
       final snapshot = await _firestore
@@ -100,13 +107,16 @@ class MedicineViewModel extends GetxController {
       final index = allMedicines.indexWhere((m) => m.id == medicine.id);
       if (index != -1) {
         allMedicines[index] = medicine;
+        filteredMedicines[index] = medicine; // Update filtered list as well
         allMedicines.refresh();
+        filteredMedicines.refresh();
       }
     } catch (e) {
       print('Error updating medicine: $e');
     }
   }
 
+  // Get a medicine by ID from the loaded list
   MedicineModel getMedicine(String medicineId) {
     // Find the medicine from the loaded list where the ID matches
     return allMedicines.firstWhere(
@@ -119,5 +129,46 @@ class MedicineViewModel extends GetxController {
         // stock: 0,
       ), // Return a default model if not found
     );
+  }
+
+  // Filter medicines based on search term (from already loaded list)
+  void filterMedicines(String searchTerm) {
+    if (searchTerm.isEmpty) {
+      // If the search term is empty, show all medicines
+      filteredMedicines.assignAll(allMedicines);
+    } else {
+      // Filter the medicines list based on the name (case-insensitive)
+      filteredMedicines.assignAll(allMedicines.where((medicine) {
+        return medicine.name.toLowerCase().contains(searchTerm.toLowerCase());
+      }).toList());
+    }
+  }
+
+  // Fetch medicines by search term from Firestore (if needed)
+  Future<void> fetchAllMedicinesBySearch(String searchTerm) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('medicines')
+          .where('name', isGreaterThanOrEqualTo: searchTerm)
+          .where('name', isLessThanOrEqualTo: '$searchTerm\uf8ff')
+          .get();
+
+      final medicines = querySnapshot.docs
+          .map((doc) => MedicineModel.fromJson(doc.data()..['id'] = doc['id']))
+          .toList();
+
+      allMedicines.assignAll(medicines);
+      filteredMedicines.assignAll(medicines);
+    } catch (e) {
+      print('Error fetching medicines: $e');
+    }
+  }
+
+  String getMedicineNameById(String id) {
+    try {
+      return allMedicines.firstWhere((med) => med.id == id).name;
+    } catch (_) {
+      return 'Unknown Medicine';
+    }
   }
 }

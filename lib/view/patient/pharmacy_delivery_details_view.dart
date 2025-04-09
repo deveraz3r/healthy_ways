@@ -93,7 +93,7 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ...order.medicineIds.map(
+            ...order.medicines.map(
               (medicineId) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
@@ -105,7 +105,7 @@ class PharmacyDeliveryDetailsView extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     FutureBuilder<String>(
-                      future: _getMedicineName(medicineId),
+                      future: _getMedicineName(medicineId["id"]),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {

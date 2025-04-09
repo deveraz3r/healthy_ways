@@ -8,10 +8,12 @@ import 'package:healty_ways/resources/components/shared/reusable_user_profile_ca
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
+import 'package:healty_ways/view_model/auth_view_model.dart';
 import 'package:healty_ways/view_model/doctors_view_model.dart';
 import 'package:healty_ways/view_model/health_records_view_model.dart';
 import 'package:healty_ways/view_model/inventory_view_model.dart';
 import 'package:healty_ways/view_model/medicine_view_model.dart';
+import 'package:healty_ways/view_model/order_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:healty_ways/resources/components/patient/build_calendar.dart';
@@ -27,6 +29,7 @@ class HomeView extends StatelessWidget {
   final HealthRecordsViewModel _healthRecordsVM =
       Get.put(HealthRecordsViewModel());
   final InventoryViewModel _inventoryVM = Get.put(InventoryViewModel());
+  final OrderViewModel _orderVM = Get.put(OrderViewModel());
 
   @override
   void initState() {
@@ -128,9 +131,12 @@ class HomeView extends StatelessWidget {
           color: AppColors.orangeColor,
         ),
         HomeButton(
-          title: 'Pharmacist',
-          onTap: () {
-            Get.toNamed(RouteName.patientPharmacy);
+          title: 'Orders',
+          onTap: () async {
+            await _medicineVM.fetchAllMedicines();
+            String? patientid = Get.find<AuthViewModel>().user?.uid;
+            await _orderVM.fetchUserOrders(patientid!, true);
+            Get.toNamed(RouteName.patientOrdersView);
           },
           color: AppColors.primaryColor,
         ),

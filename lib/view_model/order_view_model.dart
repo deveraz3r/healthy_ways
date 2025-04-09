@@ -4,22 +4,77 @@ import 'package:healty_ways/model/order_model.dart';
 
 class OrderViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  var selectedStatus = OrderStatus.processing.obs;
+  // Initialize the reactive order with a valid instance
+  final Rx<OrderModel> order = Rx<OrderModel>(
+    OrderModel(
+      id: '',
+      patientId: '',
+      pharmacistId: '',
+      medicines: [],
+      orderTime: DateTime.now(),
+      status: OrderStatus.processing,
+      address: '',
+    ),
+  );
+
   final RxList<OrderModel> _orders = <OrderModel>[].obs;
 
   List<OrderModel> get orders => _orders;
 
-  Future<void> fetchUserOrders(String userId, bool isPatient) async {
-    final field = isPatient ? 'patientId' : 'pharmacistId';
-    final query = await _firestore
-        .collection('orders')
-        .where(field, isEqualTo: userId)
-        .orderBy('orderTime', descending: true)
-        .get();
+  // ✅ Create a new order and save it to Firestore
+  Future<void> createOrder(
+    OrderModel order,
+  ) async {
+    try {
+      final newOrder = OrderModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        patientId: order.patientId,
+        pharmacistId: order.pharmacistId,
+        medicines: order.medicines,
+        orderTime: order.orderTime,
+        status: OrderStatus.processing,
+        address: order.address,
+      );
 
-    _orders.assignAll(
-        query.docs.map((doc) => OrderModel.fromJson(doc.data())).toList());
+      await _firestore
+          .collection('orders')
+          .doc(newOrder.id)
+          .set(newOrder.toJson());
+      _orders.add(newOrder);
+
+      Get.snackbar('Success', 'Order placed successfully');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to place order: $e');
+    }
   }
 
+  // ✅ Fetch user-specific orders
+  Future<void> fetchUserOrders(String userId, bool isPatient) async {
+    try {
+      final field = isPatient ? 'patientId' : 'pharmacistId';
+
+      final query = await _firestore
+          .collection('orders')
+          .where(field, isEqualTo: userId)
+          .get();
+
+      final orders =
+          query.docs.map((doc) => OrderModel.fromJson(doc.data())).toList();
+
+      orders.sort((a, b) => b.orderTime.compareTo(a.orderTime));
+
+      _orders.assignAll(orders);
+
+      for (var _order in _orders) {
+        print("Order: ${_order}");
+      }
+    } catch (e) {
+      Get.snackbar("Error", e.toString());
+    }
+  }
+
+  // ✅ Update order status both in Firestore and locally
   Future<void> updateOrderStatus(String orderId, OrderStatus newStatus) async {
     final statusStr = OrderModel.orderStatusToString(newStatus);
 
@@ -40,19 +95,54 @@ class OrderViewModel extends GetxController {
     }
   }
 
-  Future<void> createOrder(OrderModel order) async {
-    try {
-      await _firestore.collection('orders').doc(order.id).set(order.toJson());
-      // Optionally show success message
-      Get.snackbar('Success', 'Order placed successfully');
-    } catch (e) {
-      // Handle error
-      Get.snackbar('Error', 'Failed to place order');
+  // ✅ Utility for status string
+  String getStatusString(OrderStatus status) {
+    return OrderModel.orderStatusToString(status);
+  }
+
+  // ✅ Helper: Add a medicine with quantity to current reactive order
+  void addMedicineToOrder(String medicineId, int quantity) {
+    if (!order.value.medicines.any((item) => item['id'] == medicineId)) {
+      order.update((o) {
+        o?.medicines.add({
+          'id': medicineId,
+          'quantity': quantity,
+        });
+      });
     }
   }
 
-  // Helper method to get status as string
-  String getStatusString(OrderStatus status) {
-    return OrderModel.orderStatusToString(status);
+  // ✅ Helper: Set patient ID
+  void setPatientId(String patientId) {
+    order.update((o) {
+      o?.patientId = patientId;
+    });
+  }
+
+  // ✅ Helper: Set pharmacist ID (for order)
+  void setPharmacistId(String pharmacistId) {
+    order.update((o) {
+      o?.pharmacistId = pharmacistId;
+    });
+  }
+
+  // ✅ Helper: Set order address
+  void setAddress(String address) {
+    order.update((o) {
+      o?.address = address;
+    });
+  }
+
+  // ✅ Helper: Reset the order (use after submitting)
+  void resetOrder() {
+    order.value = OrderModel(
+      id: '',
+      patientId: '',
+      pharmacistId: '',
+      medicines: [],
+      orderTime: DateTime.now(),
+      status: OrderStatus.processing,
+      address: '',
+    );
   }
 }

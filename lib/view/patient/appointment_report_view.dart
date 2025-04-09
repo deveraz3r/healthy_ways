@@ -9,11 +9,15 @@ class AppointmentReportView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Appointment Report')),
+      appBar: ReusableAppBar(
+        titleText: ('Appointment Report'),
+        enableBack: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-            child: Text(report, style: TextStyle(fontSize: 16))),
+          child: Text(report, style: TextStyle(fontSize: 16)),
+        ),
       ),
     );
   }

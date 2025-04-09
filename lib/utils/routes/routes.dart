@@ -17,17 +17,19 @@ import 'package:healty_ways/view/patient/inventory_add_item_view.dart';
 import 'package:healty_ways/view/patient/inventory_view.dart';
 import 'package:healty_ways/view/patient/medication_history_view.dart';
 import 'package:healty_ways/view/patient/patient_appointment_start_view.dart';
-import 'package:healty_ways/view/patient/patient_book_appointment.dart';
 import 'package:healty_ways/view/patient/patient_diary_enteries_view.dart';
 import 'package:healty_ways/view/patient/patient_immunization_view.dart';
 import 'package:healty_ways/view/patient/patient_profile_view.dart';
-import 'package:healty_ways/view/patient/pharmacy_delivery_view.dart';
+import 'package:healty_ways/view/patient/patient_orders_view.dart';
 import 'package:healty_ways/view/patient/request_medicne_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_create_order_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_home_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_inventory_add_item_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_inventory_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_lab_records.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_orders_request_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_delivery_status_view.dart';
+import 'package:healty_ways/view/pharmacy/pharmacy_profile_view.dart';
 import 'package:healty_ways/view/pharmacy/pharmacy_upload_lab_report_view.dart';
 import 'package:healty_ways/view/shared/all_medicine_view.dart';
 import 'package:healty_ways/view/shared/auth/login_view.dart';
@@ -81,8 +83,8 @@ class Routes {
           page: () => InventoryAddItemView(),
         ),
         GetPage(
-          name: RouteName.patientPharmacy,
-          page: () => PharmacyView(),
+          name: RouteName.patientOrdersView,
+          page: () => PatientOrdersView(),
         ),
         // GetPage(
         //   name: RouteName.patientRequestMedicineCheckout, //add args while calling
@@ -208,6 +210,18 @@ class Routes {
         GetPage(
           name: RouteName.pharmacyUploadLabReportView,
           page: () => PharmacyUploadLabReportView(),
+        ),
+        GetPage(
+          name: RouteName.pharmacistCreateOrderView,
+          page: () => OrderFormView(),
+        ),
+        GetPage(
+          name: RouteName.pharmacyInventoryAddItem,
+          page: () => PharmacyInventoryAddItemView(),
+        ),
+        GetPage(
+          name: RouteName.pharmacistProfileView,
+          page: () => PharmacistProfileView(),
         ),
       ];
 }

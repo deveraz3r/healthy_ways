@@ -11,7 +11,7 @@ class RouteName {
   static const String patientHome = "/patientHome";
   static const String patientInventory = "/patientInventory";
   static const String patientInventoryAddItem = "/patientInventoryAddItem";
-  static const String patientPharmacy = "/patientPharmacy";
+  static const String patientOrdersView = "/patientOrdersView";
   static const String patientDliveryStatus = "/patientDliveryStatus";
   static const String patientRequestMedication = "/patientRequestMedication";
   static const String patientRequestMedicineCheckout =
@@ -49,6 +49,9 @@ class RouteName {
   static const String pharmacyInventoryView = "/pharmacyInventoryView";
   static const String pharmacyLabRecords = "/pharmacyLabRecords";
   static const String pharmacyOrdersRequestView = "/pharmacyOrdersRequestView";
+  static const String pharmacistCreateOrderView = "/pharmacistCreateOrderView";
+  static const String pharmacyInventoryAddItem = "/pharmacyInventoryAddItem";
+  static const String pharmacistProfileView = "/pharmacistProfileView";
   static const String doctorAppointmentStartView =
       "/doctorAppointmentStartView";
   static const String pharmacyDeliveryStatusView =

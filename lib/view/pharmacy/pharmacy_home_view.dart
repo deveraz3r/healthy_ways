@@ -2,12 +2,33 @@ import 'package:healty_ways/resources/components/pharmacy/orders_summary_chart.d
 import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/resources/components/shared/reusable_user_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/auth_view_model.dart';
+import 'package:healty_ways/view_model/inventory_view_model.dart';
+import 'package:healty_ways/view_model/medicine_view_model.dart';
+import 'package:healty_ways/view_model/order_view_model.dart';
+import 'package:healty_ways/view_model/patients_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class PharmacyHomeView extends StatelessWidget {
   PharmacyHomeView({super.key});
 
   final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
+  final MedicineViewModel _medicineVM = Get.put(MedicineViewModel());
+  final OrderViewModel _orderVM = Get.put(OrderViewModel());
+  final InventoryViewModel _inventoryVM = Get.put(InventoryViewModel());
+
+  @override
+  void initState() {
+    // super.initState();
+    // fetchOrders();
+  }
+
+  Future<void> fetchOrders() async {
+    await _orderVM.fetchUserOrders(
+      Get.find<ProfileViewModel>().profile?.uid ?? "",
+      false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +61,7 @@ class PharmacyHomeView extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: Column(
               children: [
-                OrdersSummaryChart(),
+                // OrdersSummaryChart(),  //TODO: add chart
                 const SizedBox(height: 10),
                 _buildGridButtons(),
               ],
@@ -62,22 +83,24 @@ class PharmacyHomeView extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         HomeButton(
-          title: 'Order Requests',
-          onTap: () {
+          title: 'Orders',
+          onTap: () async {
+            fetchOrders();
             Get.toNamed(RouteName.pharmacyOrdersRequestView);
           },
           color: AppColors.orangeColor,
         ),
-        HomeButton(
-          title: 'Dlivery Status',
-          onTap: () {
-            Get.toNamed(RouteName.pharmacyDeliveryStatusView);
-          },
-          color: AppColors.blueColor,
-        ),
+        // HomeButton(
+        //   title: 'Dlivery Status',
+        //   onTap: () {
+        //     Get.toNamed(RouteName.pharmacyDeliveryStatusView);
+        //   },
+        //   color: AppColors.blueColor,
+        // ),
         HomeButton(
           title: 'Inventory',
-          onTap: () {
+          onTap: () async {
+            await _inventoryVM.fetchInventory();
             Get.toNamed(RouteName.pharmacyInventoryView);
           },
           color: AppColors.purpleColor,

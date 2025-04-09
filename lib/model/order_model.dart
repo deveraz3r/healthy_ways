@@ -6,20 +6,20 @@ enum OrderStatus {
 }
 
 class OrderModel {
-  final String id;
-  final String patientId;
-  final String? pharmacistId;
-  final List<String> medicineIds;
-  final DateTime orderTime; //Date when order will be delivered
-  final OrderStatus status;
-  final List<OrderUpdate> updates;
-  final String? address;
+  String id;
+  String patientId;
+  String? pharmacistId;
+  List<Map<String, dynamic>> medicines; // List of maps with 'id' and 'quantity'
+  DateTime orderTime; // Date when order will be delivered
+  OrderStatus status;
+  List<OrderUpdate> updates;
+  String? address;
 
   OrderModel({
     required this.id,
     required this.patientId,
     this.pharmacistId,
-    required this.medicineIds,
+    required this.medicines,
     required this.orderTime,
     this.status = OrderStatus.processing,
     List<OrderUpdate>? updates,
@@ -31,7 +31,12 @@ class OrderModel {
         'id': id,
         'patientId': patientId,
         'pharmacistId': pharmacistId,
-        'medicineIds': medicineIds,
+        'medicines': medicines
+            .map((medicine) => {
+                  'id': medicine['id'],
+                  'quantity': medicine['quantity'],
+                })
+            .toList(),
         'orderTime': orderTime.toIso8601String(),
         'status': orderStatusToString(status),
         'updates': updates.map((u) => u.toJson()).toList(),
@@ -41,16 +46,23 @@ class OrderModel {
   // Create OrderModel from JSON
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-      id: json['id'],
-      patientId: json['patientId'],
-      pharmacistId: json['pharmacistId'],
-      medicineIds: List<String>.from(json['medicineIds']),
-      orderTime: DateTime.parse(json['orderTime']),
-      status: _stringToOrderStatus(json['status']),
-      updates: (json['updates'] as List<dynamic>?)
-          ?.map((u) => OrderUpdate.fromJson(u))
+      id: json['id'] as String? ?? '', // fallback to empty string
+      patientId: json['patientId'] as String? ?? '',
+      pharmacistId: json['pharmacistId'] as String?, // nullable
+      medicines: List<Map<String, dynamic>>.from(
+        (json['medicines'] as List<dynamic>? ?? []).map((medicine) {
+          return {
+            'id': medicine['id'] ?? '',
+            'quantity': medicine['quantity'] ?? 1, // default quantity
+          };
+        }),
+      ),
+      orderTime: DateTime.tryParse(json['orderTime'] ?? '') ?? DateTime.now(),
+      status: _stringToOrderStatus(json['status'] ?? 'processing'),
+      updates: (json['updates'] as List<dynamic>? ?? [])
+          .map((u) => OrderUpdate.fromJson(u))
           .toList(),
-      address: json['address'],
+      address: json['address'] as String?,
     );
   }
 
@@ -72,7 +84,7 @@ class OrderModel {
     String? id,
     String? patientId,
     String? pharmacistId,
-    List<String>? medicineIds,
+    List<Map<String, dynamic>>? medicines,
     DateTime? orderTime,
     OrderStatus? status,
     List<OrderUpdate>? updates,
@@ -82,7 +94,7 @@ class OrderModel {
       id: id ?? this.id,
       patientId: patientId ?? this.patientId,
       pharmacistId: pharmacistId ?? this.pharmacistId,
-      medicineIds: medicineIds ?? this.medicineIds,
+      medicines: medicines ?? this.medicines,
       orderTime: orderTime ?? this.orderTime,
       status: status ?? this.status,
       updates: updates ?? this.updates,
@@ -103,7 +115,7 @@ class OrderUpdate {
       };
 
   factory OrderUpdate.fromJson(Map<String, dynamic> json) => OrderUpdate(
-        timestamp: DateTime.parse(json['timestamp']),
-        message: json['message'],
+        timestamp: DateTime.tryParse(json['timestamp'] ?? '') ?? DateTime.now(),
+        message: json['message'] ?? '',
       );
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:healty_ways/model/medicine_model.dart';
 import 'package:healty_ways/model/medicine_schedule_model.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/resources/widgets/reusable_elevated_button.dart';
@@ -23,6 +22,7 @@ class _DoctorMedicineAssignViewState extends State<DoctorMedicineAssignView> {
   final AppointmentsViewModel _appointmentsVM = Get.find();
   final String patientId = Get.arguments['patientId'];
   final String patientName = Get.arguments['patientName'];
+  final String appointmentId = Get.arguments['appointmentId'];
 
   @override
   void initState() {
@@ -256,7 +256,8 @@ class _DoctorMedicineAssignViewState extends State<DoctorMedicineAssignView> {
                     doctorId: _profileVM.profile!.uid,
                     patientName: patientName,
                   );
-                  await _appointmentsVM.completeAppointmentWithReport();
+                  await _appointmentsVM
+                      .completeAppointmentWithReport(appointmentId);
                 },
                 buttonName: "Assign Medications",
               ),
