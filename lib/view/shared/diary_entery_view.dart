@@ -19,7 +19,7 @@ class DiaryEnteryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Fetch entries on build (you may move this to initState in StatefulWidget for optimization)
-    _healthRecordsVM.fetchDiaryEnteries(profile.uid, profile.role);
+    _healthRecordsVM.fetchPatientRecords(profile.uid);
 
     return Scaffold(
       appBar: ReusableAppBar(

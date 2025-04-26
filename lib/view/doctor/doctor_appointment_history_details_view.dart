@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class DoctorAppointmentHistoryDetailsView extends StatelessWidget {
   @override

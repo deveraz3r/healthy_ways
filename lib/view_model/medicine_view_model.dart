@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
 import 'package:healty_ways/model/medicine_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class MedicineViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -11,22 +11,7 @@ class MedicineViewModel extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchAllMedicines(); // Ensure data is fetched when the controller is initialized
-  }
-
-  // Get the next available id by finding the maximum id in the Firestore collection
-  Future<int> getNextId() async {
-    final querySnapshot = await _firestore.collection('medicines').get();
-    if (querySnapshot.docs.isEmpty) {
-      return 1; // If no medicines exist, start from id 1
-    }
-
-    // Find the maximum id by comparing the 'id' field in all documents
-    final maxId = querySnapshot.docs
-        .map((doc) => int.tryParse(doc['id'].toString()) ?? 0)
-        .reduce((a, b) => a > b ? a : b);
-
-    return maxId + 1; // Return the next id
+    fetchAllMedicines();
   }
 
   // Fetch all medicines from Firestore
@@ -35,37 +20,34 @@ class MedicineViewModel extends GetxController {
       final querySnapshot = await _firestore.collection('medicines').get();
 
       final medicines = querySnapshot.docs
-          .map((doc) => MedicineModel.fromJson(doc.data()..['id'] = doc['id']))
+          .map((doc) => MedicineModel.fromJson(doc.data()))
           .toList();
-
-      print('Found ${querySnapshot.docs.length} medicine documents');
 
       allMedicines.assignAll(medicines);
 
       // Initially, set the filtered list as the same as the original list
       filteredMedicines.assignAll(allMedicines);
-
-      for (var med in allMedicines) {
-        print("Medicine: ${med.id}");
-      }
     } catch (e) {
-      print('Error fetching medicines: $e');
+      _handleError('Failed to fetch medicines', e);
     }
   }
 
   // Add medicine
   Future<void> addMedicine(MedicineModel medicine) async {
-    final nextId = await getNextId();
-    final newMedicine = medicine.copyWith(id: nextId.toString());
+    // Generate a unique document ID
+    final docRef = _firestore.collection('medicines').doc();
+    final uniqueId = docRef.id;
+
+    final newMedicine = medicine.copyWith(id: uniqueId);
 
     try {
-      await _firestore
-          .collection('medicines')
-          .add(newMedicine.toJson()); // No need to track docId
+      await _firestore.collection('medicines').add(newMedicine.toJson());
+
+      //update locally aswell
       allMedicines.add(newMedicine);
-      filteredMedicines.add(newMedicine); // Add to the filtered list as well
+      filteredMedicines.add(newMedicine);
     } catch (e) {
-      print('Error adding medicine: $e');
+      _handleError('Failed to add medicine', e);
     }
   }
 
@@ -81,11 +63,11 @@ class MedicineViewModel extends GetxController {
         await _firestore.collection('medicines').doc(doc.id).delete();
       }
 
+      // Remove from local list as well
       allMedicines.removeWhere((m) => m.id == medicine.id);
-      filteredMedicines.removeWhere(
-          (m) => m.id == medicine.id); // Remove from filtered list as well
+      filteredMedicines.removeWhere((m) => m.id == medicine.id);
     } catch (e) {
-      print('Error deleting medicine: $e');
+      _handleError('Failed to delete medicine', e);
     }
   }
 
@@ -105,14 +87,17 @@ class MedicineViewModel extends GetxController {
       }
 
       final index = allMedicines.indexWhere((m) => m.id == medicine.id);
+
       if (index != -1) {
         allMedicines[index] = medicine;
-        filteredMedicines[index] = medicine; // Update filtered list as well
+        filteredMedicines[index] = medicine;
+
+        // Refresh the lists to update the UI
         allMedicines.refresh();
         filteredMedicines.refresh();
       }
     } catch (e) {
-      print('Error updating medicine: $e');
+      _handleError('Failed to update medicine', e);
     }
   }
 
@@ -144,31 +129,16 @@ class MedicineViewModel extends GetxController {
     }
   }
 
-  // Fetch medicines by search term from Firestore (if needed)
-  Future<void> fetchAllMedicinesBySearch(String searchTerm) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection('medicines')
-          .where('name', isGreaterThanOrEqualTo: searchTerm)
-          .where('name', isLessThanOrEqualTo: '$searchTerm\uf8ff')
-          .get();
-
-      final medicines = querySnapshot.docs
-          .map((doc) => MedicineModel.fromJson(doc.data()..['id'] = doc['id']))
-          .toList();
-
-      allMedicines.assignAll(medicines);
-      filteredMedicines.assignAll(medicines);
-    } catch (e) {
-      print('Error fetching medicines: $e');
-    }
-  }
-
   String getMedicineNameById(String id) {
     try {
       return allMedicines.firstWhere((med) => med.id == id).name;
     } catch (_) {
       return 'Unknown Medicine';
     }
+  }
+
+  _handleError(String message, dynamic error) {
+    Get.snackbar("Error", "$message: ${error.toString()}");
+    debugPrint("$message: $error");
   }
 }

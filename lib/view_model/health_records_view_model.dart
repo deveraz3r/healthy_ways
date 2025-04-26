@@ -1,145 +1,143 @@
-import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:healty_ways/model/allergy_model.dart';
-import 'package:healty_ways/model/immunization_model.dart';
-import 'package:healty_ways/model/diary_entry_model.dart';
-import 'package:healty_ways/model/user_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class HealthRecordsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final RxList<AllergyModel> _allergies = <AllergyModel>[].obs;
-  final RxList<ImmunizationModel> _immunizations = <ImmunizationModel>[].obs;
-  final RxList<DiaryEntryModel> _diaryEntries = <DiaryEntryModel>[].obs;
 
-  List<AllergyModel> get allergies => _allergies;
-  List<ImmunizationModel> get immunizations => _immunizations;
-  List<DiaryEntryModel> get diaryEntries => _diaryEntries;
+  final RxList<AllergyModel> allergies = <AllergyModel>[].obs;
+  final RxList<ImmunizationModel> immunizations = <ImmunizationModel>[].obs;
+  final RxList<DiaryEntryModel> diaryEntries = <DiaryEntryModel>[].obs;
 
-  /// **Function to get next available Hex ID**
-  Future<String> _getNextHexId(String collectionName) async {
-    final query = await _firestore.collection(collectionName).get();
-    int maxId = 0;
+  //============================= Shared =============================
 
-    for (var doc in query.docs) {
-      String id = doc.id;
-      try {
-        int intValue = int.parse(id, radix: 16);
-        if (intValue > maxId) {
-          maxId = intValue;
-        }
-      } catch (e) {
-        // Ignore invalid IDs that are not hexadecimal
-      }
-    }
-
-    int nextId = maxId + 1;
-    return nextId.toRadixString(16); // Convert back to hexadecimal
-  }
-
-  /// **Fetch patient records**
   Future<void> fetchPatientRecords(String patientId) async {
-    // Fetch allergies
-    final allergiesQuery = await _firestore
-        .collection('allergies')
-        .where('patientId', isEqualTo: patientId)
-        .get();
-    _allergies.assignAll(allergiesQuery.docs
-        .map((doc) => AllergyModel.fromJson({...doc.data(), 'id': doc.id}))
-        .toList());
+    try {
+      // Fetch allergies
+      final allergiesQuery = await _firestore
+          .collection('allergies')
+          .where('patientId', isEqualTo: patientId)
+          .get();
 
-    // Fetch immunizations
-    final immunizationsQuery = await _firestore
-        .collection('immunizations')
-        .where('patientId', isEqualTo: patientId)
-        .get();
-    _immunizations.assignAll(immunizationsQuery.docs
-        .map((doc) => ImmunizationModel.fromJson({...doc.data(), 'id': doc.id}))
-        .toList());
-  }
+      allergies.assignAll(
+        allergiesQuery.docs
+            .map((doc) => AllergyModel.fromJson(doc.data()))
+            .toList(),
+      );
 
-  Future<void> fetchDiaryEnteries(String uid, UserRole addedBy) async {
-    String collection;
+      // Fetch immunizations
+      final immunizationsQuery = await _firestore
+          .collection('immunizations')
+          .where('patientId', isEqualTo: patientId)
+          .get();
 
-    switch (addedBy) {
-      case UserRole.patient:
-        collection = "patientId";
-      case UserRole.doctor:
-        collection = "doctorId";
-      case UserRole.pharmacist:
-        collection = "pharmacistId";
+      immunizations.assignAll(
+        immunizationsQuery.docs
+            .map((doc) => ImmunizationModel.fromJson(doc.data()))
+            .toList(),
+      );
+
+      // Fetch diary entries
+      final diaryEntriesQuery = await _firestore
+          .collection('diary')
+          .where("patientId", isEqualTo: patientId)
+          .get();
+
+      diaryEntries.assignAll(
+        diaryEntriesQuery.docs
+            .map((doc) => DiaryEntryModel.fromJson(doc.data()))
+            .toList(),
+      );
+    } catch (e) {
+      _handleError("Failed to fetch patient records", e);
     }
-
-    // Fetch diary entries
-    final diaryEntriesQuery = await _firestore
-        .collection('diary')
-        .where(collection, isEqualTo: uid)
-        .get();
-
-    _diaryEntries.assignAll(
-      diaryEntriesQuery.docs
-          .map((doc) => DiaryEntryModel.fromJson({...doc.data(), 'id': doc.id}))
-          .toList(),
-    );
   }
 
-  /// **Add DiaryEntry with Auto ID**
-  Future<void> addDiaryEntry(DiaryEntryModel diary) async {
-    String newId = await _getNextHexId('diary');
+  //============================= Allergies =============================
 
-    diary.id = newId;
-
-    await _firestore.collection('diary').doc(newId).set(diary.toJson());
-    _diaryEntries.add(diary.copyWith(id: newId));
-  }
-
-  /// **Add Allergy with Auto ID**
   Future<void> addAllergy(AllergyModel allergy) async {
-    String newId = await _getNextHexId('allergies');
-    await _firestore.collection('allergies').doc(newId).set(allergy.toJson());
-    _allergies.add(allergy.copyWith(id: newId));
-  }
+    try {
+      final docRef = _firestore.collection('allergies').doc();
+      allergy.id = docRef.id;
 
-  /// **Add Immunization with Auto ID**
-  Future<void> addImmunization(ImmunizationModel immunization) async {
-    String newId = await _getNextHexId('immunizations');
-    await _firestore
-        .collection('immunizations')
-        .doc(newId)
-        .set(immunization.toJson());
-    _immunizations.add(immunization.copyWith(id: newId));
-  }
-
-  /// **Delete Allergy**
-  Future<void> deleteAllergy(String id) async {
-    await _firestore.collection('allergies').doc(id).delete();
-    _allergies.removeWhere((a) => a.id == id);
-  }
-
-  /// **Delete Immunization**
-  Future<void> deleteImmunization(String id) async {
-    await _firestore.collection('immunizations').doc(id).delete();
-    _immunizations.removeWhere((i) => i.id == id);
-  }
-
-  /// **Delete Diary Enteries**
-  Future<void> deleteDiaryEntery(String id, UserRole deletedBy) async {
-    final doc = await _firestore.collection('diary').doc(id).get();
-
-    DiaryEntryModel diaryDoc = DiaryEntryModel.fromJson(doc.data()!);
-
-    if (diaryDoc.addedBy == deletedBy || deletedBy == UserRole.patient) {
-      await _firestore.collection('diary').doc(id).delete();
-      _diaryEntries.removeWhere((i) => i.id == id);
-
-      Get.snackbar(
-        "Deletion Success",
-        "Diary Entery successfully deleted!",
-      );
-    } else {
-      Get.snackbar(
-        "Can not delete",
-        "You donot have permission to delete This entery, Diary can only be deleted by the person whom added it or patient themself",
-      );
+      await docRef.set(allergy.toJson());
+      allergies.add(allergy.copyWith(id: docRef.id));
+    } catch (e) {
+      _handleError("Failed to add allergy", e);
     }
+  }
+
+  Future<void> deleteAllergy(String id) async {
+    try {
+      await _firestore.collection('allergies').doc(id).delete();
+      allergies.removeWhere((a) => a.id == id);
+    } catch (e) {
+      _handleError("Failed to delete allergy", e);
+    }
+  }
+
+  //============================= Immunization =============================
+
+  Future<void> addImmunization(ImmunizationModel immunization) async {
+    try {
+      final docRef = _firestore.collection('immunizations').doc();
+      immunization.id = docRef.id;
+
+      await docRef.set(immunization.toJson());
+      immunizations.add(immunization.copyWith(id: docRef.id));
+    } catch (e) {
+      _handleError("Failed to add immunization", e);
+    }
+  }
+
+  Future<void> deleteImmunization(String id) async {
+    try {
+      await _firestore.collection('immunizations').doc(id).delete();
+      immunizations.removeWhere((i) => i.id == id);
+    } catch (e) {
+      _handleError("Failed to delete immunization", e);
+    }
+  }
+
+  //============================= Diary Entrys =============================
+
+  Future<void> addDiaryEntry(DiaryEntryModel diary) async {
+    try {
+      final docRef = _firestore.collection('diary').doc();
+      diary.id = docRef.id;
+
+      await docRef.set(diary.toJson());
+      diaryEntries.add(diary.copyWith(id: docRef.id));
+    } catch (e) {
+      _handleError("Failed to add diary entry", e);
+    }
+  }
+
+  Future<void> deleteDiaryEntery(String id, UserRole deletedBy) async {
+    try {
+      final doc = await _firestore.collection('diary').doc(id).get();
+
+      DiaryEntryModel diaryDoc = DiaryEntryModel.fromJson(doc.data()!);
+
+      if (diaryDoc.addedBy == deletedBy || deletedBy == UserRole.patient) {
+        await _firestore.collection('diary').doc(id).delete();
+        diaryEntries.removeWhere((i) => i.id == id);
+
+        Get.snackbar(
+          "Deletion Success",
+          "Diary Entry successfully deleted!",
+        );
+      } else {
+        Get.snackbar(
+          "Cannot Delete",
+          "You do not have permission to delete this entry. Diary entries can only be deleted by the person who added them or the patient themselves.",
+        );
+      }
+    } catch (e) {
+      _handleError("Failed to delete diary entry", e);
+    }
+  }
+
+  void _handleError(String message, dynamic error) {
+    Get.snackbar("Error", "$message: ${error.toString()}");
+    debugPrint("$message: $error");
   }
 }

@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:healty_ways/resources/app_colors.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class HomeButton extends StatelessWidget {
   final String title;

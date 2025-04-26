@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healty_ways/model/pharmacist_model.dart';
-import 'package:get/get.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 
 class PharmacistsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   final RxList<PharmacistModel> _allPharmacists = <PharmacistModel>[].obs;
   final RxList<PharmacistModel> _filteredPharmacists = <PharmacistModel>[].obs;
+
   final RxString _searchQuery = ''.obs;
   final RxBool _isLoading = false.obs;
 
@@ -22,13 +23,16 @@ class PharmacistsViewModel extends GetxController {
   Future<void> fetchAllPharmacists() async {
     try {
       _isLoading.value = true;
+
       final querySnapshot = await _firestore
           .collection('users')
           .where('role', isEqualTo: 'pharmacist')
           .get();
 
-      _allPharmacists
-          .assignAll(querySnapshot.docs.map(_convertToPharmacistModel));
+      _allPharmacists.value = querySnapshot.docs
+          .map((doc) => PharmacistModel.fromJson(doc.data()))
+          .toList();
+
       _filteredPharmacists.assignAll(_allPharmacists);
     } catch (e) {
       _handleError("Failed to fetch pharmacists", e);
@@ -46,14 +50,6 @@ class PharmacistsViewModel extends GetxController {
           pharmacist.fullName.toLowerCase().contains(query) ||
           pharmacist.email.toLowerCase().contains(query)));
     }
-  }
-
-  PharmacistModel _convertToPharmacistModel(
-      QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-    return PharmacistModel.fromJson({
-      ...doc.data(),
-      'uid': doc.id,
-    });
   }
 
   void _handleError(String message, dynamic error) {

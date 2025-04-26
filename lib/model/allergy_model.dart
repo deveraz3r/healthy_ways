@@ -1,5 +1,5 @@
 class AllergyModel {
-  final String id;
+  String id;
   final String title;
   final String description;
   final String patientId;

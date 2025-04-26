@@ -32,6 +32,9 @@ class MedicationHistoryView extends StatelessWidget {
             medication.assignedTime.month,
             medication.assignedTime.day,
           );
+
+          // Check if the date is not present in the map
+          // If not, initialize it with an empty list
           if (!groupedByDate.containsKey(assignedDate)) {
             groupedByDate[assignedDate] = [];
           }

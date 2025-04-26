@@ -1,32 +1,47 @@
-import 'package:healty_ways/model/appointment_model.dart';
-import 'package:healty_ways/model/patient_model.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/resources/components/shared/appointment_profile_card.dart';
-import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/appointments_view_model.dart';
-import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
-import 'package:healty_ways/view_model/health_records_view_model.dart';
 
 class DoctorAppointmentStartView extends StatelessWidget {
-  DoctorAppointmentStartView({super.key});
+  DoctorAppointmentStartView({super.key}) {
+    //TODO: this is not a good practice to initialize view models here, move it
+    Get.put(HealthRecordsViewModel());
+    Get.put(AssignedMedicationViewModel());
+  }
 
-  final AppointmentsViewModel _appointmentsVm = Get.find();
+  final PatientsViewModel _patientsVM = Get.find<PatientsViewModel>();
+  final ChatViewModel _chatVM = Get.find<ChatViewModel>();
+  final ProfileViewModel _profileVM = Get.find<ProfileViewModel>();
   final AppointmentModel appointment = Get.arguments;
-  final HealthRecordsViewModel _healthRecordsVM =
-      Get.put(HealthRecordsViewModel());
-  final AssignedMedicationViewModel _assignMedsVM =
-      Get.put(AssignedMedicationViewModel());
 
   @override
   Widget build(BuildContext context) {
     final PatientModel? patient =
-        _appointmentsVm.getPatientInfo(appointment.patientId);
+        _patientsVM.getPatientInfo(appointment.patientId);
+    //TODO: if patients data is not loading properly then here could be a possible error
 
     return Scaffold(
       appBar: ReusableAppBar(
         titleText: "Appointment",
         enableBack: true,
+        actions: [
+          IconButton(
+              onPressed: () async {
+                //start appointment logic here
+                final String otherUserId =
+                    appointment.patientId == _profileVM.profile!.uid
+                        ? appointment.doctorId
+                        : appointment.patientId;
+
+                await _chatVM.startAppointmentChat(
+                  appointment: appointment,
+                  otherUserId: otherUserId,
+                );
+                Get.toNamed(RouteName.chatView);
+              },
+              icon: Icon(
+                Icons.chat,
+                color: Colors.white,
+              ))
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -50,7 +65,7 @@ class DoctorAppointmentStartView extends StatelessWidget {
 
   Widget _buildGridButtons() {
     final PatientModel? patient =
-        _appointmentsVm.getPatientInfo(appointment.patientId);
+        _patientsVM.getPatientInfo(appointment.patientId);
 
     return GridView.count(
       shrinkWrap: true,

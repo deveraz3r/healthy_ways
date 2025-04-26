@@ -1,4 +1,3 @@
-import 'package:healty_ways/model/doctor_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 
 class DoctorCard extends StatelessWidget {

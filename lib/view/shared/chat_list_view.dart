@@ -1,79 +1,132 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/utils/routes/route_name.dart';
-import 'package:healty_ways/view_model/chat_view_model.dart';
-import 'package:healty_ways/model/chat_room_model.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
+// import 'package:healty_ways/utils/app_urls.dart';
 
-class ChatsListView extends StatelessWidget {
-  final ChatViewModel chatVM = Get.find<ChatViewModel>();
-  final ProfileViewModel profileVM = Get.find<ProfileViewModel>();
+// class ChatsListView extends StatelessWidget {
+//   final ChatViewModel chatVM = Get.find<ChatViewModel>();
+//   final ProfileViewModel profileVM = Get.find<ProfileViewModel>();
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Chats"),
-      ),
-      body: Obx(
-        () {
-          if (chatVM.chats.isEmpty) {
-            return Center(child: Text('No chats available'));
-          }
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text("Chats"),
+//       ),
+//       body: Obx(
+//         () {
+//           if (chatVM.chats.isEmpty) {
+//             return const Center(child: Text('No chats available'));
+//           }
 
-          return ListView.builder(
-            itemCount: chatVM.chats.length,
-            itemBuilder: (context, index) {
-              final chat = chatVM.chats[index];
-              final participant = _getParticipant(chat);
+//           return ListView.builder(
+//             itemCount: chatVM.chats.length,
+//             itemBuilder: (context, index) {
+//               final chat = chatVM.chats[index];
+//               final participantFuture = _getParticipant(chat);
 
-              return ListTile(
-                onTap: () => _onChatTap(context, chat),
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(participant.profileImage ?? ''),
-                  radius: 24,
-                ),
-                title: Text(participant.fullName),
-                subtitle: Text(chat.lastMessage?.content ?? 'No message'),
-                trailing: Text(_formatTime(chat.updatedAt ?? DateTime.now())),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
+//               return FutureBuilder<UserModel>(
+//                 future:
+//                     participantFuture, // Fetch the participant asynchronously
+//                 builder: (context, snapshot) {
+//                   if (snapshot.connectionState == ConnectionState.waiting) {
+//                     return const ListTile(
+//                       title: Text('Loading...'),
+//                       leading: CircularProgressIndicator(),
+//                     );
+//                   } else if (snapshot.hasError) {
+//                     return const ListTile(
+//                       title: Text('Error fetching participant'),
+//                       leading: Icon(Icons.error),
+//                     );
+//                   } else if (!snapshot.hasData) {
+//                     return const ListTile(
+//                       title: Text('No participant found'),
+//                       leading: Icon(Icons.error),
+//                     );
+//                   }
 
-  void _onChatTap(BuildContext context, ChatModel chat) {
-    chatVM.listenToMessages(chat.id); // Start listening for messages
-    Get.toNamed(RouteName.chatView, arguments: chat);
-  }
+//                   final participant = snapshot.data!;
 
-  UserModel _getParticipant(ChatModel chat) {
-    final currentUser = profileVM.profile!;
-    final participantId = chat.participantIds.firstWhere(
-        (id) => id != currentUser.uid,
-        orElse: () => currentUser.uid);
+//                   return ListTile(
+//                     onTap: () => _onChatTap(context, chat, participant),
+//                     leading: CircleAvatar(
+//                       backgroundImage:
+//                           _getProfileImage(participant.profileImage),
+//                       radius: 24,
+//                     ),
+//                     title: Text(participant.fullName),
+//                     subtitle: Text(chat.lastMessage?.content ?? 'No message'),
+//                     trailing: Text(_formatTime(chat.updatedAt)),
+//                   );
+//                 },
+//               );
+//             },
+//           );
+//         },
+//       ),
+//     );
+//   }
 
-    if (participantId == currentUser.uid) {
-      return currentUser;
-    }
+//   void _onChatTap(
+//     BuildContext context,
+//     ChatModel chat,
+//     UserModel participant,
+//   ) async {
+//     try {
+//       if (chat.type == ChatType.oneToOne) {
+//         await chatVM.startChatWithUser(participant.uid);
+//       } else if (chat.type == ChatType.appointment) {
+//         await chatVM.startAppointmentChat(
+//           appointment: chat.appointment!,
+//           otherUserId: participant.uid,
+//         );
+//       }
 
-    // Assuming users are fetched and converted into the correct model
-    return _fetchUserById(participantId);
-  }
+//       // Navigate to the chat view
+//       Get.toNamed(RouteName.chatView, arguments: chat);
+//     } catch (e) {
+//       Get.snackbar("Error", "Failed to open chat: ${e.toString()}");
+//     }
+//   }
 
-  UserModel _fetchUserById(String userId) {
-    // This is a simplified approach; you may want to fetch actual users from Firebase or your backend
-    return UserModel(
-        uid: userId,
-        fullName: 'John Doe',
-        email: 'johndoe@example.com',
-        role: UserRole.patient);
-  }
+//   Future<UserModel> _getParticipant(ChatModel chat) async {
+//     final currentUser = profileVM.profile!;
+//     final participantId = chat.participantIds.firstWhere(
+//       (id) => id != currentUser.uid,
+//       orElse: () => currentUser.uid,
+//     );
 
-  String _formatTime(DateTime dateTime) {
-    return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
-}
+//     if (participantId == currentUser.uid) {
+//       return currentUser;
+//     }
+
+//     // Fetch the participant data asynchronously
+//     final participant = await profileVM.getProfileDataById(participantId);
+
+//     // If participant is not found, return a default UserModel
+//     if (participant == null) {
+//       return UserModel(
+//         uid: participantId,
+//         fullName: 'Unknown User',
+//         email: 'unknown@example.com',
+//         role: UserRole.patient,
+//       );
+//     }
+
+//     return participant;
+//   }
+
+//   ImageProvider _getProfileImage(String? imageUrl) {
+//     if (imageUrl == null || imageUrl.isEmpty) {
+//       return const AssetImage('assets/images/profile.jpg');
+//     }
+//     try {
+//       return NetworkImage(imageUrl);
+//     } catch (e) {
+//       return const AssetImage('assets/images/profile.jpg');
+//     }
+//   }
+
+//   String _formatTime(DateTime? dateTime) {
+//     if (dateTime == null) return 'Unknown';
+//     return '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+//   }
+// }

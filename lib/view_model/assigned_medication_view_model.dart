@@ -1,52 +1,33 @@
-import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:healty_ways/model/medication_model.dart';
-import 'package:healty_ways/model/medicine_model.dart';
-import 'package:healty_ways/model/medicine_schedule_model.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/view_model/inventory_view_model.dart';
-import 'package:healty_ways/view_model/medicine_view_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
-import 'package:intl/intl.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class AssignedMedicationViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ProfileViewModel _profileVM = Get.find<ProfileViewModel>();
+  final InventoryViewModel _inventoryVM = Get.find<InventoryViewModel>();
 
-  final MedicineViewModel medicineVM = Get.find();
-  final ProfileViewModel _profileVM = Get.find();
-
-  final RxList<MedicineModel> availableMedicines = <MedicineModel>[].obs;
   final RxList<MedicationModel> assignedMedications = <MedicationModel>[].obs;
+  final RxList<MedicationModel> filterAssignedMedications =
+      <MedicationModel>[].obs;
+  get availableMedicines => Get.find<MedicineViewModel>().allMedicines;
 
   final RxList<MedicineScheduleModel> selectedSchedules =
       <MedicineScheduleModel>[].obs;
-
   final Rx<DateTime> selectedDate = DateTime.now().obs;
 
+  get getMedicine => Get.find<MedicineViewModel>().getMedicine;
+
   @override
-  void onInit() {
+  void onInit() async {
+    // remove async from onInit if it isn't calling automatically
     super.onInit();
 
-    fetchAvailableMedicines();
-
     if (_profileVM.profile!.role == UserRole.patient) {
-      fetchAssignedMedication(_profileVM.profile!.uid);
+      // Only auto-fetch for patients
+      await fetchAssignedMedication(_profileVM.profile!.uid);
     }
   }
 
-  Future<void> fetchAvailableMedicines() async {
-    // final querySnapshot = await _firestore.collection('medicines').get();
-    // final meds = querySnapshot.docs
-    //     .map(
-    //         (doc) => MedicineModel.fromJson(doc.data()..addAll({'id': doc.id})))
-    //     .toList();
-    // ;
-    await Get.find<MedicineViewModel>().fetchAllMedicines();
-    availableMedicines.assignAll(medicineVM.allMedicines);
-    print(
-        "Available medicines: ${availableMedicines.map((m) => '${m.id} - ${m.name}').toList()}");
-  }
-
+  // Fetch medications assigned to the patient by id (so this function can be used by both patient and healthcare providers)
   Future<void> fetchAssignedMedication(String patientId) async {
     try {
       final querySnapshot = await _firestore
@@ -55,34 +36,74 @@ class AssignedMedicationViewModel extends GetxController {
           .get();
 
       final medications = querySnapshot.docs
-          .map((doc) => MedicationModel.fromJson(doc.data()..['id'] = doc.id))
+          .map((doc) => MedicationModel.fromJson(doc.data()))
           .toList();
 
       assignedMedications.assignAll(medications);
+      filterAssignedMedications.assignAll(medications); // Update filtered list
     } catch (e) {
-      print("Error fetching medications: $e");
-      assignedMedications.clear();
-      Get.snackbar("Error", "Failed to fetch medications");
+      _handleError("Failed to fetch medications", e);
     }
   }
 
-  void addSchedule(MedicineScheduleModel schedule) {
-    final exists =
-        selectedSchedules.any((s) => s.medicine.id == schedule.medicine.id);
-    print(exists ? "Medicine already exsist!" : "medicine does not exsist");
-    if (!exists) selectedSchedules.add(schedule);
-  }
+  Future<void> markAsTaken(String medicationId) async {
+    final medication =
+        assignedMedications.firstWhere((med) => med.id == medicationId);
 
-  void removeSchedule(MedicineScheduleModel schedule) {
-    selectedSchedules.removeWhere((s) => s.medicine.id == schedule.medicine.id);
-  }
-
-  void updateSchedule(MedicineScheduleModel updatedSchedule) {
-    final index = selectedSchedules
-        .indexWhere((s) => s.medicine.id == updatedSchedule.medicine.id);
-    if (index != -1) {
-      selectedSchedules[index] = updatedSchedule;
+    if (medication.isTaken) {
+      // Revert taken status
+      await _inventoryVM.revertStock(
+        medication.medicineId,
+        medication.quantity,
+      );
+      medication.isTaken = false;
+    } else {
+      // Check stock and mark as taken
+      final success = await _inventoryVM.deductStock(
+        medication.medicineId,
+        medication.quantity,
+      );
+      if (!success) {
+        Get.snackbar("Error", "Not enough stock");
+        return;
+      }
+      medication.isTaken = true;
     }
+
+    assignedMedications.refresh();
+    filterAssignedMedications.refresh(); // Refresh filtered list
+    await _updateMedicationStatusInFirestore(medication);
+  }
+
+  Future<void> _updateMedicationStatusInFirestore(
+      MedicationModel medication) async {
+    try {
+      final snapshot = await _firestore
+          .collection('medications')
+          .where('id', isEqualTo: medication.id)
+          .get();
+
+      for (var doc in snapshot.docs) {
+        await _firestore
+            .collection('medications')
+            .doc(doc.id)
+            .update({'isTaken': medication.isTaken});
+      }
+    } catch (e) {
+      _handleError('Error updating isTaken in Firestore', e);
+    }
+  }
+
+  void filterMedicationsForDate() {
+    filterAssignedMedications.assignAll(assignedMedications.where((med) =>
+        med.assignedTime.year == selectedDate.value.year &&
+        med.assignedTime.month == selectedDate.value.month &&
+        med.assignedTime.day == selectedDate.value.day));
+  }
+
+  Future<void> updateSelectedDate(DateTime date) async {
+    selectedDate.value = date;
+    filterMedicationsForDate();
   }
 
   Future<void> assignSchedulesToFirestore({
@@ -125,103 +146,22 @@ class AssignedMedicationViewModel extends GetxController {
     Get.snackbar("Success", "Medications assigned to $patientName");
   }
 
-  // Mark as taken and update in Firestore
-  void markAsTaken(String medicationId) async {
-    final medication =
-        assignedMedications.firstWhere((med) => med.id == medicationId);
-
-    final inventoryVM = Get.find<InventoryViewModel>();
-    final inventoryItem = inventoryVM.inventory
-        .firstWhereOrNull((item) => item.medicineId == medication.medicineId);
-
-    if (medication.isTaken) {
-      // ✅ Revert taken status and add back to inventory
-      if (inventoryItem != null) {
-        final restoredQuantity = inventoryItem.stock + medication.quantity;
-        await inventoryVM.updateStock(medication.medicineId, restoredQuantity);
-      }
-
-      medication.isTaken = false;
-      assignedMedications.refresh();
-
-      try {
-        final snapshot = await _firestore
-            .collection('medications')
-            .where('id', isEqualTo: medication.id)
-            .get();
-
-        for (var doc in snapshot.docs) {
-          await _firestore
-              .collection('medications')
-              .doc(doc.id)
-              .update({'isTaken': false});
-        }
-      } catch (e) {
-        print('Error updating isTaken in Firestore: $e');
-      }
-
-      return;
-    }
-
-    // ✅ Trying to mark as taken - check stock first
-    if (inventoryItem == null || inventoryItem.stock < medication.quantity) {
-      Get.snackbar(
-        "Not enough stock",
-        "You don’t have enough ${getMedicine(medication.medicineId).name} in inventory.",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    try {
-      // Deduct stock
-      final newQuantity = inventoryItem.stock - medication.quantity;
-      await inventoryVM.updateStock(medication.medicineId, newQuantity);
-
-      // Mark as taken
-      medication.isTaken = true;
-      assignedMedications.refresh();
-
-      // Update in Firestore
-      final snapshot = await _firestore
-          .collection('medications')
-          .where('id', isEqualTo: medication.id)
-          .get();
-
-      for (var doc in snapshot.docs) {
-        await _firestore
-            .collection('medications')
-            .doc(doc.id)
-            .update({'isTaken': true});
-      }
-    } catch (e) {
-      print('Error marking medication as taken: $e');
-      Get.snackbar("Error", "Failed to mark medication as taken");
-    }
+  void addSchedule(MedicineScheduleModel schedule) {
+    final exists =
+        selectedSchedules.any((s) => s.medicine.id == schedule.medicine.id);
+    if (!exists) selectedSchedules.add(schedule);
   }
 
-  // Fetch medications for a specific date
-  List<MedicationModel> getMedicationsForDate(DateTime date) {
-    return assignedMedications.where((med) {
-      final assigned = med.assignedTime;
-      return assigned.year == date.year &&
-          assigned.month == date.month &&
-          assigned.day == date.day;
-    }).toList();
+  void removeSchedule(MedicineScheduleModel schedule) {
+    selectedSchedules.removeWhere((s) => s.medicine.id == schedule.medicine.id);
   }
 
-  // Update the selected date
-  Future<void> updateSelectedDate(DateTime date) async {
-    selectedDate.value = date;
-  }
-
-  MedicineModel getMedicine(String id) {
-    return availableMedicines.firstWhere(
-      (med) => med.id == id,
-      orElse: () {
-        throw Exception("Medicine with id $id not found");
-      },
-    );
+  void updateSchedule(MedicineScheduleModel updatedSchedule) {
+    final index = selectedSchedules
+        .indexWhere((s) => s.medicine.id == updatedSchedule.medicine.id);
+    if (index != -1) {
+      selectedSchedules[index] = updatedSchedule;
+    }
   }
 
   String generateMedicationReport() {
@@ -251,5 +191,10 @@ class AssignedMedicationViewModel extends GetxController {
     }
 
     return buffer.toString();
+  }
+
+  _handleError(String message, dynamic error) {
+    Get.snackbar("Error", "$message: ${error.toString()}");
+    debugPrint("$message: $error");
   }
 }

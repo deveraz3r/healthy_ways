@@ -1,5 +1,6 @@
 import 'package:healty_ways/resources/components/pharmacy/pharmacist_card.dart';
 import 'package:healty_ways/resources/widgets/reusable_text_field.dart';
+import 'package:healty_ways/view_model/chat_view_model.dart';
 import 'package:healty_ways/view_model/pharmacist_view_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 
@@ -98,7 +99,11 @@ class PatientContactPharmacistView extends StatelessWidget {
     final pharmacist = _viewModel.pharmacists[index];
     return PharmacistCard(
       pharmacist: pharmacist,
-      onTap: () => {
+      onTap: () async {
+        await Get.find<ChatViewModel>().startChatWithUser(pharmacist.uid);
+
+        Get.toNamed(RouteName.chatView);
+
         // Get.toNamed(
         //   RouteName
         //       .contactPharmacistView, // Replace with your actual route for chatting

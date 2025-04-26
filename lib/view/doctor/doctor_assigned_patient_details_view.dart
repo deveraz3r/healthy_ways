@@ -1,16 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:healty_ways/model/assigned_medication_model.dart';
-import 'package:healty_ways/model/medication_model.dart';
-import 'package:healty_ways/model/medicine_model.dart';
-import 'package:healty_ways/model/patient_model.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/resources/components/shared/home_button.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/appointments_view_model.dart';
-import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
-import 'package:healty_ways/view_model/health_records_view_model.dart';
-import 'package:healty_ways/view_model/patients_view_model.dart';
-import 'package:intl/intl.dart';
 
 class DoctorAssignedPatientDetailsView extends StatelessWidget {
   final PatientsViewModel patientsVM = Get.find();
@@ -34,7 +22,9 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
   }
 
   Future<void> _loadPatientData() async {
-    final patientData = await patientsVM.getPatientDetails(patientId);
+    final patientData = await Get.find<ProfileViewModel>()
+        .getProfileDataById<PatientModel>(patientId);
+
     if (patientData != null) {
       patient.value = patientData;
       patientName.value = patientData.fullName;
@@ -245,7 +235,9 @@ class DoctorAssignedPatientDetailsView extends StatelessWidget {
   }
 
   Widget _buildGridButtons() {
-    final PatientModel? patient = _appointmentsVm.getPatientInfo(patientId);
+    final PatientModel? patient =
+        Get.find<PatientsViewModel>().getPatientInfo(patientId);
+    // if patients data is not loading then here could be a possible error
 
     return GridView.count(
       shrinkWrap: true,

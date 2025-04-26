@@ -1,7 +1,9 @@
+import 'package:healty_ways/utils/app_urls.dart';
+
 class InventoryModel {
   final String medicineId;
   int stock;
-  final String userId;
+  String userId;
 
   InventoryModel({
     required this.medicineId,

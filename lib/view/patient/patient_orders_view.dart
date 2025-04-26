@@ -127,8 +127,8 @@ class PatientOrdersView extends StatelessWidget {
                     Column(
                       children: (order.medicines ?? []).map((medicine) {
                         final name = Get.find<MedicineViewModel>()
-                            .getMedicineNameById(medicine["id"]);
-                        final quantity = medicine["quantity"] ?? "N/A";
+                            .getMedicineNameById(medicine.id);
+                        final quantity = medicine.quantity;
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4.0),
                           child: Row(

@@ -1,7 +1,4 @@
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/medicine_view_model.dart';
-import 'package:healty_ways/model/medicine_model.dart';
-import 'package:healty_ways/view_model/inventory_view_model.dart';
 
 class InventoryAddItemView extends StatefulWidget {
   @override
@@ -16,7 +13,6 @@ class _InventoryAddItemViewState extends State<InventoryAddItemView> {
   final _quantityController = TextEditingController();
   final _searchController = TextEditingController();
 
-  String? selectedMedicineId;
   MedicineModel? selectedMedicine;
 
   // Filtered list of medicines based on search input
@@ -55,7 +51,7 @@ class _InventoryAddItemViewState extends State<InventoryAddItemView> {
                 _filterMedicines(query);
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Searchable List of Available Medicines
             Obx(() {
@@ -73,7 +69,6 @@ class _InventoryAddItemViewState extends State<InventoryAddItemView> {
 
                         // Update the selected medicine details
                         setState(() {
-                          selectedMedicineId = medicine.id;
                           selectedMedicine = medicine;
                         });
                       },
@@ -85,7 +80,7 @@ class _InventoryAddItemViewState extends State<InventoryAddItemView> {
 
             // Display medicine details and the quantity input field
             if (selectedMedicine != null) ...[
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text("Selected Medicine: ${selectedMedicine!.name}"),
               Text("Formula: ${selectedMedicine!.formula}"),
 
@@ -95,16 +90,20 @@ class _InventoryAddItemViewState extends State<InventoryAddItemView> {
                 child: TextFormField(
                   controller: _quantityController,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: 'Quantity'),
+                  decoration: const InputDecoration(labelText: 'Quantity'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter the quantity';
+                    }
+                    final quantity = int.tryParse(value);
+                    if (quantity == null || quantity <= 0) {
+                      return 'Please enter a valid positive number';
                     }
                     return null;
                   },
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Add to inventory button
               Container(
@@ -114,24 +113,28 @@ class _InventoryAddItemViewState extends State<InventoryAddItemView> {
                 margin: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Colors.blue, // Your primary color
+                  color: selectedMedicine != null ? Colors.blue : Colors.grey,
                 ),
                 child: ReuseableElevatedbutton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate() &&
-                        selectedMedicine != null) {
-                      final quantity = int.parse(_quantityController.text);
+                  onPressed: selectedMedicine == null
+                      ? null
+                      : () {
+                          if (_formKey.currentState!.validate() &&
+                              selectedMedicine != null) {
+                            final quantity =
+                                int.parse(_quantityController.text);
 
-                      // Add the selected medicine to the patient inventory
-                      inventoryViewModel.addMedicineToInventory(
-                        selectedMedicineId!,
-                        quantity,
-                      );
+                            inventoryViewModel.addMedicineToInventory(
+                              InventoryModel(
+                                medicineId: selectedMedicine!.id,
+                                stock: quantity,
+                                userId: inventoryViewModel.userId.value,
+                              ),
+                            );
 
-                      // Navigate back to the inventory page
-                      Get.back();
-                    }
-                  },
+                            Get.back(); // Navigate back to inventory
+                          }
+                        },
                   buttonName: "Add to Inventory",
                 ),
               ),

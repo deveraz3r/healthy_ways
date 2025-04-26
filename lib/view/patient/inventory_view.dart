@@ -1,9 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/resources/components/patient/inventory_medicne_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/inventory_view_model.dart';
-import 'package:healty_ways/view_model/medicine_view_model.dart';
 
 class InventoryView extends StatelessWidget {
   InventoryView({super.key});

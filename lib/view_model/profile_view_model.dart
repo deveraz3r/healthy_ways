@@ -1,23 +1,19 @@
-import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:healty_ways/model/doctor_model.dart';
-import 'package:healty_ways/model/patient_model.dart';
-import 'package:healty_ways/model/pharmacist_model.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/view_model/auth_view_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class ProfileViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Rx<UserModel?> _profile = Rx<UserModel?>(null);
-  final Rx<UserRole> _currentRole = UserRole.patient.obs;
 
   UserModel? get profile => _profile.value;
-  UserRole get currentRole => _currentRole.value;
+  UserRole get currentRole => _profile.value!.role;
+
+  // Helper getters for role checks
+  bool get isDoctor => currentRole == UserRole.doctor;
+  bool get isPatient => currentRole == UserRole.patient;
+  bool get isPharmacist => currentRole == UserRole.pharmacist;
 
   Future<void> fetchProfile(String uid, UserRole role) async {
     try {
-      _currentRole.value = role;
-
       final doc = await _firestore.collection('users').doc(uid).get();
 
       if (!doc.exists || doc.data() == null) {
@@ -31,8 +27,6 @@ class ProfileViewModel extends GetxController {
       if (data['email'] == null || data['name'] == null) {
         throw Exception("Required user fields are missing");
       }
-
-      print("Profile Uid: ${profile?.uid}");
 
       switch (role) {
         case UserRole.doctor:
@@ -49,19 +43,6 @@ class ProfileViewModel extends GetxController {
       Get.snackbar("Profile Error", "Failed to load profile data");
       _profile.value = null;
     }
-  }
-
-  // Helper getters for role checks
-  bool get isDoctor => _currentRole.value == UserRole.doctor;
-  bool get isPatient => _currentRole.value == UserRole.patient;
-  bool get isPharmacist => _currentRole.value == UserRole.pharmacist;
-
-  // Get role-specific data with type safety
-  T? getRoleData<T>() {
-    if (_profile.value is T) {
-      return _profile.value as T;
-    }
-    return null;
   }
 
   Future<T?> getProfileDataById<T extends UserModel>(String uid) async {

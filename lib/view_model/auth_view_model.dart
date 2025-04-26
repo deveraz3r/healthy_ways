@@ -1,16 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/utils/routes/route_name.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
+import "package:healty_ways/utils/app_urls.dart";
 
 class AuthViewModel extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Rxn<User> _user = Rxn<User>();
 
-  final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
+  final ProfileViewModel _profileVM =
+      Get.put(ProfileViewModel(), permanent: true);
 
   // Form fields
   final Rx<UserRole> selectedRole = UserRole.patient.obs;
@@ -185,7 +181,8 @@ class AuthViewModel extends GetxController {
     }
   }
 
-  void navigateToHomeScreen() {
+  void navigateToHomeScreen() async {
+    await initViewModels(); // Ensure view models are initialized
     switch (selectedRole.value) {
       case UserRole.doctor:
         Get.offAllNamed(RouteName.doctorHomeView);
@@ -197,5 +194,45 @@ class AuthViewModel extends GetxController {
         Get.offAllNamed(RouteName.pharmacyHomeView);
         break;
     }
+  }
+
+  Future<void> initViewModels() async {
+    // Initialize the view models in the correct order
+    // Get.put(AuthViewModel()); // Auth must be initialized first
+    // Get.put(ProfileViewModel()); // Profile depends on Auth
+
+    // 2. Now put all other VMs that depend on profile
+    Get.put(MedicineViewModel(), permanent: true);
+    Get.put(InventoryViewModel(), permanent: true);
+    Get.put(PatientsViewModel(), permanent: true);
+    Get.put(DoctorsViewModel(), permanent: true);
+    Get.put(PharmacistsViewModel(), permanent: true);
+    Get.put(AssignedMedicationViewModel(), permanent: true);
+    Get.put(AppointmentsViewModel(), permanent: true);
+    Get.put(ChatViewModel(), permanent: true);
+    Get.put(HealthRecordsViewModel(), permanent: true);
+    Get.put(OrderViewModel(), permanent: true);
+    Get.put(LabReportsViewModel(), permanent: true);
+
+    // // Initialize independent view models
+    // Get.put(MedicineViewModel()); // Independent
+    // Get.put(InventoryViewModel()); // Depends on Profile
+
+    // // Initialize user-specific view models
+    // Get.put(PatientsViewModel()); // Depends on Profile
+    // Get.put(DoctorsViewModel()); // Depends on Profile
+    // Get.put(PharmacistsViewModel()); // Depends on Profile
+    // // Ensure AssignedMedicationViewModel completes initialization
+    // final AssignedMedicationViewModel assignedMedicationVM =
+    //     Get.put(AssignedMedicationViewModel());
+    // assignedMedicationVM
+    //     .fetchAssignedMedication(Get.find<ProfileViewModel>().profile!.uid);
+
+    // // Initialize other dependent view models
+    // Get.put(AppointmentsViewModel()); // Independent but after Profile
+    // Get.put(ChatViewModel()); // Depends on Profile
+    // Get.put(HealthRecordsViewModel()); // Depends on Profile
+    // Get.put(OrderViewModel()); // Depends on Profile
+    // Get.put(LabReportsViewModel()); // Depends on Profile
   }
 }

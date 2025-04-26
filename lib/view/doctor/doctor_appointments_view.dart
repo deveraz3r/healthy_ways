@@ -1,12 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/appointment_model.dart';
-import 'package:healty_ways/resources/app_colors.dart';
-import 'package:healty_ways/resources/components/doctor/doctors_appointments_card.dart';
-import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
-import 'package:healty_ways/view_model/appointments_view_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
-import 'package:intl/intl.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class DoctorAppointmentsView extends StatefulWidget {
   const DoctorAppointmentsView({super.key});
@@ -26,9 +18,9 @@ class _DoctorAppointmentsViewState extends State<DoctorAppointmentsView> {
     _fetchAppointments();
   }
 
-  void _fetchAppointments() {
+  void _fetchAppointments() async {
     if (profileVM.profile != null && appointmentsVM.isInitial.value) {
-      appointmentsVM.fetchUserAppointments(profileVM.profile!.uid, true);
+      await appointmentsVM.fetchUserAppointments(profileVM.profile!.uid, true);
     }
   }
 

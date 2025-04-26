@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 enum MessageType {
   text,

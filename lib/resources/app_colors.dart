@@ -1,4 +1,4 @@
-import '../utils/app_urls.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class AppColors {
   //------------------- Shared -------------------

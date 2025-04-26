@@ -5,8 +5,10 @@ import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class DoctorsViewModel extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   final RxList<DoctorModel> _allDoctors = <DoctorModel>[].obs;
   final RxList<DoctorModel> _filteredDoctors = <DoctorModel>[].obs;
+
   final RxString _searchQuery = ''.obs;
   final RxBool _isLoading = false.obs;
 
@@ -25,13 +27,17 @@ class DoctorsViewModel extends GetxController {
   Future<void> fetchAllDoctors() async {
     try {
       _isLoading.value = true;
+
       final querySnapshot = await _firestore
           .collection('users')
           .where('role', isEqualTo: 'doctor')
           .get();
 
-      _allDoctors.assignAll(querySnapshot.docs.map(_convertToDoctorModel));
-      _filteredDoctors.assignAll(_allDoctors);
+      _allDoctors.value = querySnapshot.docs
+          .map((doc) => DoctorModel.fromJson(doc.data()))
+          .toList();
+
+      _filteredDoctors.value = _allDoctors;
     } catch (e) {
       _handleError("Failed to fetch doctors", e);
     } finally {
@@ -41,33 +47,22 @@ class DoctorsViewModel extends GetxController {
 
   void updateSearchQuery(String query) {
     _searchQuery.value = query.toLowerCase();
+
     if (query.isEmpty) {
       _filteredDoctors.assignAll(_allDoctors);
     } else {
-      _filteredDoctors.assignAll(_allDoctors.where((doctor) =>
-          (doctor.fullName.toLowerCase().contains(query)) ||
-          (doctor.specialty.toLowerCase().contains(query)) ||
-          (doctor.qualification.toLowerCase().contains(query)) ||
-          (doctor.location.toLowerCase().contains(query))));
+      _filteredDoctors.value = _allDoctors
+          .where((doctor) =>
+              (doctor.fullName.toLowerCase().contains(query)) ||
+              (doctor.specialty.toLowerCase().contains(query)) ||
+              (doctor.qualification.toLowerCase().contains(query)) ||
+              (doctor.location.toLowerCase().contains(query)))
+          .toList();
     }
   }
 
-  DoctorModel _convertToDoctorModel(
-      QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-    return DoctorModel.fromJson({
-      ...doc.data(),
-      'uid': doc.id,
-    });
-  }
-
-  void _handleError(String message, dynamic error) {
-    Get.snackbar("Error", "$message: ${error.toString()}");
-    debugPrint("$message: $error");
-  }
-
   void updateDoctorSchedule(Map<String, List<AppointmentSlot>> schedule) {
-    final doctor = _profileViewModel.getRoleData<DoctorModel>();
-    if (doctor == null) return;
+    final doctor = _profileViewModel.profile as DoctorModel;
 
     final updatedDoctor = DoctorModel(
       uid: doctor.uid,
@@ -87,5 +82,14 @@ class DoctorsViewModel extends GetxController {
         .collection('users')
         .doc(doctor.uid)
         .update(updatedDoctor.toJson());
+  }
+
+  DoctorModel? getDoctorInfo(String doctorId) {
+    return _allDoctors.firstWhereOrNull((doctor) => doctor.uid == doctorId);
+  }
+
+  void _handleError(String message, dynamic error) {
+    Get.snackbar("Error", "$message: ${error.toString()}");
+    debugPrint("$message: $error");
   }
 }

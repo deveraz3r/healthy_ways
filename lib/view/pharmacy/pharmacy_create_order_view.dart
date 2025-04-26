@@ -1,11 +1,4 @@
-import 'package:healty_ways/model/medicine_model.dart';
-import 'package:healty_ways/model/patient_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/inventory_view_model.dart';
-import 'package:healty_ways/view_model/medicine_view_model.dart';
-import 'package:healty_ways/view_model/order_view_model.dart';
-import 'package:healty_ways/view_model/patients_view_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class OrderFormView extends StatefulWidget {
   const OrderFormView({super.key});
@@ -24,8 +17,12 @@ class _OrderFormViewState extends State<OrderFormView> {
   @override
   void initState() {
     super.initState();
-    medicineViewModel.fetchAllMedicinesBySearch('');
-    patientsViewModel.fetchAllPatients();
+    initViewModels();
+  }
+
+  void initViewModels() async {
+    await medicineViewModel.fetchAllMedicines();
+    await patientsViewModel.fetchAllPatients();
   }
 
   @override
@@ -103,20 +100,18 @@ class _OrderFormViewState extends State<OrderFormView> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: orderViewModel.order.value.medicines
-              .map((medicine) => Chip(
-                    label: Text(
-                      "${medicine['name']} (Qty: ${medicine['quantity']})",
-                    ),
-                    onDeleted: () {
-                      setState(() {
-                        orderViewModel.order.update((order) {
-                          order?.medicines.remove(medicine);
-                        });
-                      });
-                    },
-                  ))
-              .toList(),
+          children: orderViewModel.order.value.medicines.map((medicine) {
+            return Chip(
+              label: Text("${medicine.name} (Qty: ${medicine.quantity})"),
+              onDeleted: () {
+                setState(() {
+                  orderViewModel.order.update((order) {
+                    order?.medicines.remove(medicine);
+                  });
+                });
+              },
+            );
+          }).toList(),
         ),
         const SizedBox(height: 12),
         ReuseableElevatedbutton(
@@ -133,13 +128,15 @@ class _OrderFormViewState extends State<OrderFormView> {
                 setState(() {
                   orderViewModel.order.update((order) {
                     if (!(order?.medicines
-                            ?.any((item) => item['id'] == selected.id) ??
+                            .any((item) => item.id == selected.id) ??
                         false)) {
-                      order?.medicines?.add({
-                        'id': selected.id,
-                        'name': selected.name, // Save the medicine name
-                        'quantity': quantity,
-                      });
+                      order?.medicines.add(OrderMedsModel(
+                        id: selected.id,
+                        name: selected.name,
+                        formula: selected.formula,
+                        stockType: selected.stockType,
+                        quantity: quantity,
+                      ));
                     }
                   });
                 });
@@ -209,16 +206,16 @@ class _OrderFormViewState extends State<OrderFormView> {
     String errorMessage = "";
 
     for (var item in orderItems) {
-      final String medicineId = item['id'].toString();
-      final int requestedQty = item['quantity'];
+      final String medicineId = item.id; // Accessing `id` from `OrderMedsModel`
+      final int requestedQty = item.quantity; // Accessing `quantity`
 
-      final invItem = inventory
-          .firstWhereOrNull((inv) => inv.medicineId.toString() == medicineId);
+      final invItem =
+          inventory.firstWhereOrNull((inv) => inv.medicineId == medicineId);
 
       if (invItem == null || invItem.stock < requestedQty) {
         hasError = true;
         errorMessage +=
-            "- ${item['name']} (requested: $requestedQty, available: ${invItem?.stock ?? 0})\n";
+            "- ${item.name} (requested: $requestedQty, available: ${invItem?.stock ?? 0})\n";
       }
     }
 
@@ -231,19 +228,19 @@ class _OrderFormViewState extends State<OrderFormView> {
 
     // If valid, subtract stock
     for (var item in orderItems) {
-      final String medicineId = item['id'].toString();
-      final int requestedQty = item['quantity'];
+      final String medicineId = item.id;
+      final int requestedQty = item.quantity;
 
-      final index = inventory
-          .indexWhere((inv) => inv.medicineId.toString() == medicineId);
+      final index = inventory.indexWhere((inv) => inv.medicineId == medicineId);
       if (index != -1) {
         inventory[index].stock -= requestedQty;
 
         // ✅ Use the updated value
-        await inventoryVM.updateStock(
-          medicineId,
-          inventory[index].stock,
-        );
+        await inventoryVM.updateStock(InventoryModel(
+          userId: inventory[index].userId,
+          medicineId: medicineId,
+          stock: inventory[index].stock,
+        ));
       }
     }
 
@@ -253,7 +250,7 @@ class _OrderFormViewState extends State<OrderFormView> {
   Future<MedicineModel?> _showMedicineSelectionDialog(
       BuildContext context) async {
     final searchController = TextEditingController();
-    medicineViewModel.fetchAllMedicinesBySearch('');
+    // medicineViewModel.fetchAllMedicinesBySearch(''); //TODO: see if this is needed
 
     return await showDialog<MedicineModel>(
       context: context,
@@ -269,7 +266,7 @@ class _OrderFormViewState extends State<OrderFormView> {
                   labelText: 'Search medicine',
                 ),
                 onChanged: (value) {
-                  medicineViewModel.fetchAllMedicinesBySearch(value);
+                  medicineViewModel.filterMedicines(value);
                 },
               ),
               const SizedBox(height: 12),
@@ -278,9 +275,10 @@ class _OrderFormViewState extends State<OrderFormView> {
                 height: 300,
                 child: Obx(() {
                   return ListView.builder(
-                    itemCount: medicineViewModel.allMedicines.length,
+                    itemCount: medicineViewModel.filteredMedicines.length,
                     itemBuilder: (context, index) {
-                      final medicine = medicineViewModel.allMedicines[index];
+                      final medicine =
+                          medicineViewModel.filteredMedicines[index];
                       return ListTile(
                         title: Text(medicine.name), // Display the name
                         subtitle: Text(medicine.formula),

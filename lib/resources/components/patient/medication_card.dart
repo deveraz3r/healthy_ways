@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:healty_ways/model/assigned_medication_model.dart';
-import 'package:healty_ways/resources/app_colors.dart';
-import 'package:intl/intl.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class MedicationCard extends StatelessWidget {
   final AssignedMedicationModel assignedMedication;

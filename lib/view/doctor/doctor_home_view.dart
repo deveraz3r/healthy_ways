@@ -1,9 +1,4 @@
-import 'package:healty_ways/resources/components/shared/home_button.dart';
-import 'package:healty_ways/resources/components/shared/reusable_user_profile_card.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/appointments_view_model.dart';
-import 'package:healty_ways/view_model/medicine_view_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class DoctorHomeView extends StatelessWidget {
   DoctorHomeView({super.key});
@@ -22,7 +17,8 @@ class DoctorHomeView extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              Get.toNamed(RouteName.chatView);
+              Get.put(ChatViewModel());
+              Get.toNamed(RouteName.oneToOneChatsListView);
             },
             icon: Icon(
               Icons.chat_rounded,

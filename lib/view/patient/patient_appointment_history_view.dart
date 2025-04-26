@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:healty_ways/model/appointment_model.dart';
-import 'package:healty_ways/resources/components/patient/appointment_card.dart';
+import 'package:healty_ways/resources/components/patient/patient_appointment_card.dart';
 import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
 import 'package:healty_ways/view_model/appointments_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
@@ -26,9 +26,9 @@ class _PatientAppointmentHistoryViewState
     _fetchAppointments();
   }
 
-  void _fetchAppointments() {
+  void _fetchAppointments() async {
     if (profileVM.profile != null && appointmentVM.isInitial.value) {
-      appointmentVM.fetchUserAppointments(profileVM.profile!.uid, false);
+      await appointmentVM.fetchUserAppointments(profileVM.profile!.uid, false);
     }
   }
 

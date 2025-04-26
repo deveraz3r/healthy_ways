@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/auth_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:healty_ways/model/patient_model.dart';
 
@@ -40,12 +41,10 @@ class _PatientProfileViewState extends State<PatientProfileView> {
   }
 
   void _initializeControllers() {
-    final patient = _profileVM.getRoleData<PatientModel>();
-    if (patient != null) {
-      _nameController.text = patient.fullName;
-      _emailController.text = patient.email;
-      _bioController.text = patient.bio ?? '';
-    }
+    final patient = _profileVM.profile as PatientModel;
+    _nameController.text = patient.fullName;
+    _emailController.text = patient.email;
+    _bioController.text = patient.bio ?? '';
   }
 
   void _updateProfile({
@@ -53,8 +52,7 @@ class _PatientProfileViewState extends State<PatientProfileView> {
     String? email,
     String? bio,
   }) {
-    final patient = _profileVM.getRoleData<PatientModel>();
-    if (patient == null) return;
+    final patient = _profileVM.profile as PatientModel;
 
     _profileVM.updateProfile(PatientModel(
       uid: patient.uid,
@@ -85,10 +83,7 @@ class _PatientProfileViewState extends State<PatientProfileView> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Obx(() {
-              final patient = _profileVM.getRoleData<PatientModel>();
-              if (patient == null) {
-                return Center(child: CircularProgressIndicator());
-              }
+              final patient = _profileVM.profile as PatientModel;
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -164,6 +159,7 @@ class _PatientProfileViewState extends State<PatientProfileView> {
                     color: Colors.red,
                     textColor: Colors.white,
                     onPressed: () {
+                      Get.delete<AuthViewModel>();
                       FirebaseAuth.instance.signOut();
                       Get.offAllNamed(RouteName.login);
                     },

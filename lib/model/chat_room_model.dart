@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:healty_ways/model/message_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 enum ChatType {
   oneToOne,
-  event, // appointment-specific, etc.
+  appointment,
+  //add more events as required
 }
 
 class ChatModel {

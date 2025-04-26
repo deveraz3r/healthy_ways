@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:healty_ways/model/order_model.dart';
-import 'package:intl/intl.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class DateGroupCard extends StatelessWidget {
   final DateTime date;

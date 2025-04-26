@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class DeliveryItemCard extends StatelessWidget {
   final String orderId;

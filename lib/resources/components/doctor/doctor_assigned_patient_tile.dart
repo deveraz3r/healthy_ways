@@ -1,6 +1,4 @@
-import 'package:google_fonts/google_fonts.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view/doctor/doctor_assigned_patient_details_view.dart';
 
 class DoctorAssignedPatientTile extends StatelessWidget {
   final String uid;

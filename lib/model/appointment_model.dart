@@ -1,3 +1,5 @@
+import 'package:healty_ways/utils/app_urls.dart';
+
 enum AppointmentStatus { upcoming, inProgress, completed, missed }
 
 extension AppointmentStatusExtension on AppointmentStatus {
@@ -11,6 +13,7 @@ class AppointmentModel {
   final DateTime time;
   AppointmentStatus status;
   final String? report;
+  String? chatId;
 
   AppointmentModel({
     required this.appointmentId,
@@ -19,6 +22,7 @@ class AppointmentModel {
     required this.time,
     required this.status,
     this.report,
+    this.chatId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -28,6 +32,7 @@ class AppointmentModel {
         'time': time.toIso8601String(),
         'status': status.value,
         'report': report,
+        'chatId': chatId,
       };
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) =>
@@ -40,6 +45,7 @@ class AppointmentModel {
             (e) => e.value == json['status'],
             orElse: () => AppointmentStatus.upcoming),
         report: json['report'],
+        chatId: json['chatId'],
       );
 
   AppointmentModel copyWith({
@@ -48,6 +54,8 @@ class AppointmentModel {
     String? patientId,
     DateTime? time,
     AppointmentStatus? status,
+    String? report,
+    String? chatId,
   }) {
     return AppointmentModel(
       appointmentId: appointmentId ?? this.appointmentId,
@@ -55,6 +63,8 @@ class AppointmentModel {
       patientId: patientId ?? this.patientId,
       time: time ?? this.time,
       status: status ?? this.status,
+      report: report ?? this.report,
+      chatId: chatId ?? this.chatId,
     );
   }
 }

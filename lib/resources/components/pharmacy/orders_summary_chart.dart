@@ -1,5 +1,4 @@
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class OrdersSummaryChart extends StatelessWidget {
   const OrdersSummaryChart({super.key});

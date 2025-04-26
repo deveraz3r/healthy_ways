@@ -1,5 +1,5 @@
 class ImmunizationModel {
-  final String id;
+  String id;
   final String title;
   final String description;
   final String patientId;

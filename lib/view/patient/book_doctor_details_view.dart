@@ -1,9 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:healty_ways/model/doctor_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view/patient/patient_book_appointment.dart';
 
 class BookDoctorDetailsView extends StatelessWidget {
   const BookDoctorDetailsView({super.key});
@@ -26,6 +21,25 @@ class BookDoctorDetailsView extends StatelessWidget {
         titleText: 'Book Appointment',
         centerTitle: true,
         enableBack: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              ChatViewModel chatVM;
+              try {
+                chatVM = Get.find<ChatViewModel>();
+              } catch (e) {
+                chatVM = Get.put(ChatViewModel());
+              }
+
+              chatVM.startChatWithUser(doctor.uid);
+              Get.toNamed(RouteName.chatView);
+            },
+            icon: Icon(
+              Icons.chat,
+              color: Colors.white,
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -38,7 +52,7 @@ class BookDoctorDetailsView extends StatelessWidget {
                 radius: 50,
                 backgroundImage: doctor.profileImage != null
                     ? NetworkImage(doctor.profileImage!)
-                    : const AssetImage('assets/images/default_doctor.png')
+                    : const AssetImage('assets/images/image.jpg')
                         as ImageProvider,
               ),
               const SizedBox(height: 10),

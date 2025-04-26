@@ -1,4 +1,5 @@
 import 'package:healty_ways/model/user_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class PharmacistModel extends UserModel {
   PharmacistModel({

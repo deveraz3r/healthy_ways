@@ -3,10 +3,13 @@ class RouteName {
   static const String splash = "/";
   static const String login = "/login";
   static const String signup = "/signup";
-  static const String chatsListView = "/chatsListView";
+  static const String oneToOneChatsListView = "/oneToOneChatsListView";
   static const String chatView = "/chatView";
+  static const String chatComponent = "/chatComponent";
   static const String diaryEnteryView = "/diaryEnteryView";
   static const String allMedicinesView = "/allMedicinesView";
+  static const String labReportDetailsView = "/labReportDetailsView";
+  static const String labReportsListView = "/labReportsListView";
 
   //------------------- Patient -------------------
   static const String patientHome = "/patientHome";

@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/resources/app_colors.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 void showAssignMedicinePopup(String patientName, String medicineName) {
   Get.dialog(

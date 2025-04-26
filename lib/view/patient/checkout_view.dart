@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/order_model.dart';
-import 'package:healty_ways/view_model/order_view_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class CheckoutView extends StatelessWidget {
   final OrderViewModel viewModel = Get.find();
@@ -35,7 +32,7 @@ class CheckoutView extends StatelessWidget {
     //                 shape: RoundedRectangleBorder(
     //                   borderRadius: BorderRadius.circular(12),
     //                 ),
-    //                 margin: EdgeInsets.only(bottom: 16),
+    //                 margin: const EdgeInsets.only(bottom: 16),
     //                 child: Padding(
     //                   padding: const EdgeInsets.all(16.0),
     //                   child: Column(
@@ -43,12 +40,12 @@ class CheckoutView extends StatelessWidget {
     //                     children: [
     //                       Text(
     //                         "Medicine ${index + 1}",
-    //                         style: TextStyle(
+    //                         style: const TextStyle(
     //                           fontSize: 18,
     //                           fontWeight: FontWeight.bold,
     //                         ),
     //                       ),
-    //                       SizedBox(height: 12),
+    //                       const SizedBox(height: 12),
     //                       Text("Name: ${medicine.name}"),
     //                       Text("Formula: ${medicine.formula}"),
     //                       Text("Quantity: ${medicine.quantity}"),

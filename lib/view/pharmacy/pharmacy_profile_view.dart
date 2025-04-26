@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:healty_ways/model/pharmacist_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
+import 'package:healty_ways/view_model/auth_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class PharmacistProfileView extends StatefulWidget {
@@ -36,16 +37,14 @@ class _PharmacistProfileViewState extends State<PharmacistProfileView> {
   }
 
   void _initializeControllers() {
-    final pharmacist = _profileVM.getRoleData<PharmacistModel>();
-    if (pharmacist != null) {
-      _nameController.text = pharmacist.fullName;
-      _emailController.text = pharmacist.email;
-    }
+    final pharmacist = _profileVM.profile as PharmacistModel;
+
+    _nameController.text = pharmacist.fullName;
+    _emailController.text = pharmacist.email;
   }
 
   void _updateProfile({String? fullName, String? email}) {
-    final pharmacist = _profileVM.getRoleData<PharmacistModel>();
-    if (pharmacist == null) return;
+    final pharmacist = _profileVM.profile as PharmacistModel;
 
     _profileVM.updateProfile(PharmacistModel(
       uid: pharmacist.uid,
@@ -75,10 +74,7 @@ class _PharmacistProfileViewState extends State<PharmacistProfileView> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Obx(() {
-              final pharmacist = _profileVM.getRoleData<PharmacistModel>();
-              if (pharmacist == null) {
-                return const Center(child: CircularProgressIndicator());
-              }
+              final pharmacist = _profileVM.profile as PharmacistModel;
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -139,6 +135,7 @@ class _PharmacistProfileViewState extends State<PharmacistProfileView> {
                     icon: Icons.logout,
                     title: "Sign Out",
                     onTap: () {
+                      Get.delete<AuthViewModel>();
                       FirebaseAuth.instance.signOut();
                       Get.offAllNamed(RouteName.login);
                     },
@@ -180,7 +177,7 @@ class _PharmacistProfileViewState extends State<PharmacistProfileView> {
         title: Text(title),
         trailing: Icon(
           _sectionExpandedState[title] == true
-              ? Icons.arrow_drop_down
+              ? Icons.arrow_drop_down_circle_rounded
               : Icons.arrow_forward_ios,
           size: 16,
           color: Colors.grey,

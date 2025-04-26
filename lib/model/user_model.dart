@@ -1,3 +1,5 @@
+import 'package:healty_ways/utils/app_urls.dart';
+
 enum UserRole { doctor, patient, pharmacist }
 
 extension UserRoleExtension on UserRole {

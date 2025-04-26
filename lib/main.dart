@@ -4,9 +4,13 @@ import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    print('Firebase initialization error: $e');
+  }
   runApp(const MyApp());
 }
 
@@ -29,7 +33,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-// Get.to(
-//   PharmacyDeliveryDetailsView(orderId: 'your_order_id'),
-// );

@@ -1,5 +1,4 @@
-import 'package:healty_ways/model/medication_model.dart';
-import 'package:healty_ways/model/medicine_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class AssignedMedicationModel {
   final MedicationModel medication;

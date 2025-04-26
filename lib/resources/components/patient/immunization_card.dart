@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/immunization_model.dart';
-import 'package:healty_ways/view_model/health_records_view_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class ImmunizationCard extends StatelessWidget {
   const ImmunizationCard({super.key, required this.immunization});

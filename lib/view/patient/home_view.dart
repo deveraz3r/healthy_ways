@@ -1,45 +1,49 @@
-import 'package:google_fonts/google_fonts.dart';
-import 'package:healty_ways/model/assigned_medication_model.dart';
-import 'package:healty_ways/model/diary_entry_model.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/resources/components/shared/home_button.dart';
-import 'package:healty_ways/resources/components/patient/medication_card.dart';
-import 'package:healty_ways/resources/components/shared/reusable_user_profile_card.dart';
+import 'package:healty_ways/resources/components/patient/medication_card.dart'
+    as patient;
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/appointments_view_model.dart';
-import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
-import 'package:healty_ways/view_model/auth_view_model.dart';
-import 'package:healty_ways/view_model/doctors_view_model.dart';
-import 'package:healty_ways/view_model/health_records_view_model.dart';
-import 'package:healty_ways/view_model/inventory_view_model.dart';
-import 'package:healty_ways/view_model/medicine_view_model.dart';
-import 'package:healty_ways/view_model/order_view_model.dart';
-import 'package:healty_ways/view_model/pharmacist_view_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
-import 'package:intl/intl.dart';
-import 'package:healty_ways/resources/components/patient/build_calendar.dart';
+import 'package:healty_ways/view_model/lab_reports_view_model.dart';
 
 class HomeView extends StatelessWidget {
-  final MedicineViewModel _medicineVM = Get.put(MedicineViewModel());
-  final AssignedMedicationViewModel _assignedMedicationVM =
-      Get.put(AssignedMedicationViewModel());
-  final ProfileViewModel _profileVM = Get.put(ProfileViewModel());
-  final DoctorsViewModel _doctorsVM = Get.put(DoctorsViewModel());
-  final AppointmentsViewModel _appointmentsVM =
-      Get.put(AppointmentsViewModel());
-  final HealthRecordsViewModel _healthRecordsVM =
-      Get.put(HealthRecordsViewModel());
-  final InventoryViewModel _inventoryVM = Get.put(InventoryViewModel());
-  final OrderViewModel _orderVM = Get.put(OrderViewModel());
-  final PharmacistsViewModel _pharmacistsVM = Get.put(PharmacistsViewModel());
+  HomeView({super.key}) {
+    // // Initialize the view models in the correct order
+    // Get.put(AuthViewModel()); // Auth must be initialized first
+    // Get.put(ProfileViewModel()); // Profile depends on Auth
 
-  @override
-  void initState() {
-    // super.initState();
-    // _assignedMedicationVM.fetchAssignedMedication(_profileVM.profile!.uid);
-    _inventoryVM.initUser();
-    _inventoryVM.fetchInventory();
+    // // Initialize independent view models
+    // Get.put(MedicineViewModel()); // Independent
+    // Get.put(InventoryViewModel()); // Depends on Profile
+
+    // // Initialize user-specific view models
+    // Get.put(PatientsViewModel()); // Depends on Profile
+    // Get.put(DoctorsViewModel()); // Depends on Profile
+    // Get.put(PharmacistsViewModel()); // Depends on Profile
+    // // Ensure AssignedMedicationViewModel completes initialization
+    // final AssignedMedicationViewModel assignedMedicationVM =
+    //     Get.put(AssignedMedicationViewModel());
+    // assignedMedicationVM
+    //     .fetchAssignedMedication(Get.find<ProfileViewModel>().profile!.uid);
+
+    // // Initialize other dependent view models
+    // Get.put(AppointmentsViewModel()); // Independent but after Profile
+    // Get.put(ChatViewModel()); // Depends on Profile
+    // Get.put(HealthRecordsViewModel()); // Depends on Profile
+    // Get.put(OrderViewModel()); // Depends on Profile
+    // Get.put(LabReportsViewModel()); // Depends on Profile
   }
+
+  final MedicineViewModel _medicineVM = Get.find<MedicineViewModel>();
+  final AssignedMedicationViewModel _assignedMedicationVM =
+      Get.find<AssignedMedicationViewModel>();
+  final ProfileViewModel _profileVM = Get.find<ProfileViewModel>();
+  final DoctorsViewModel _doctorsVM = Get.find<DoctorsViewModel>();
+  final AppointmentsViewModel _appointmentsVM =
+      Get.find<AppointmentsViewModel>();
+  final HealthRecordsViewModel _healthRecordsVM =
+      Get.find<HealthRecordsViewModel>();
+  final InventoryViewModel _inventoryVM = Get.find<InventoryViewModel>();
+  final OrderViewModel _orderVM = Get.find<OrderViewModel>();
+  final PharmacistsViewModel _pharmacistsVM = Get.find<PharmacistsViewModel>();
+  // final LabReportsViewModel _labReportsVM = Get.put(LabReportsViewModel());
 
   @override
   Widget build(BuildContext context) {
@@ -47,38 +51,28 @@ class HomeView extends StatelessWidget {
       appBar: ReusableAppBar(
         appBarTitle: ReusableUserProfileCard(),
         titleText: "",
-        // leading: IconButton(
-        //   icon: const Icon(
-        //     Icons.menu,
-        //     color: Colors.white,
-        //   ),
-        //   onPressed: () {},
-        // ),
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.notifications,
-              color: Colors.white,
-            ),
+            icon: const Icon(Icons.chat, color: Colors.white),
+            onPressed: () {
+              Get.toNamed(RouteName.oneToOneChatsListView);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
             onPressed: () {},
           ),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // const Navbar(),
-              // const SizedBox(height: 10),
               BuildCalendar(
                 onDateSelected: (date) {
-                  _assignedMedicationVM
-                      .updateSelectedDate(date); // Update selected date
+                  _assignedMedicationVM.updateSelectedDate(date);
                 },
               ),
               const SizedBox(height: 10),
@@ -117,12 +111,12 @@ class HomeView extends StatelessWidget {
 
   Widget _buildGridButtons() {
     return GridView.count(
-      shrinkWrap: true, // Prevent nested scrolling
-      physics: const NeverScrollableScrollPhysics(), // Disable scrolling
-      crossAxisCount: 2, // 2 items per row
-      crossAxisSpacing: 8, // Horizontal spacing between items
-      mainAxisSpacing: 8, // Vertical spacing between items
-      childAspectRatio: 4, // Rectangular shape
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
+      childAspectRatio: 4,
       padding: EdgeInsets.zero,
       children: [
         HomeButton(
@@ -136,8 +130,8 @@ class HomeView extends StatelessWidget {
           title: 'Orders',
           onTap: () async {
             await _medicineVM.fetchAllMedicines();
-            String? patientid = Get.find<AuthViewModel>().user?.uid;
-            await _orderVM.fetchUserOrders(patientid!, true);
+            String? patientId = Get.find<AuthViewModel>().user?.uid;
+            await _orderVM.fetchUserOrders(patientId!, true);
             Get.toNamed(RouteName.patientOrdersView);
           },
           color: AppColors.primaryColor,
@@ -183,7 +177,12 @@ class HomeView extends StatelessWidget {
         ),
         HomeButton(
           title: 'Lab Reports',
-          onTap: () {},
+          onTap: () {
+            // final LabReportsViewModel _labReportsVM =
+            //     Get.put(LabReportsViewModel());
+
+            Get.toNamed(RouteName.labReportsListView);
+          },
           color: AppColors.purpleColor,
         ),
         HomeButton(
@@ -206,8 +205,8 @@ class HomeView extends StatelessWidget {
 
   Widget _buildMedicationGrid() {
     return Obx(() {
-      final medications = _assignedMedicationVM
-          .getMedicationsForDate(_assignedMedicationVM.selectedDate.value);
+// _assignedMedicationVM.filterMedicationsForDate();  //uncomment if date filtering is not working from changedate function
+      final medications = _assignedMedicationVM.filterAssignedMedications;
 
       return GridView.count(
         shrinkWrap: true,
@@ -217,14 +216,12 @@ class HomeView extends StatelessWidget {
         mainAxisSpacing: 8,
         childAspectRatio: 1.25,
         children: medications
-            .map((am) => MedicationCard(
+            .map((am) => patient.MedicationCard(
                   assignedMedication: AssignedMedicationModel(
                       medication: am,
                       medicine:
                           _assignedMedicationVM.getMedicine(am.medicineId)),
-                  onToggle: () => _assignedMedicationVM.markAsTaken(
-                    am.id,
-                  ), // Toggle medication status
+                  onToggle: () => _assignedMedicationVM.markAsTaken(am.id),
                 ))
             .toList(),
       );

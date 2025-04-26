@@ -3,14 +3,13 @@ import 'package:healty_ways/model/patient_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/medicine_view_model.dart';
 import 'package:healty_ways/view_model/order_view_model.dart';
-import 'package:healty_ways/view_model/patients_view_model.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 class PharmacyOrdersRequestView extends StatelessWidget {
   final OrderViewModel _orderVM = Get.put(OrderViewModel());
-  final PatientsViewModel _patientsVM = Get.put(PatientsViewModel());
+  final ProfileViewModel _profileVM = Get.find<ProfileViewModel>();
 
   PharmacyOrdersRequestView({super.key});
 
@@ -71,7 +70,7 @@ class PharmacyOrdersRequestView extends StatelessWidget {
 
   Widget _buildOrderCard(OrderModel order) {
     return FutureBuilder<PatientModel?>(
-      future: _patientsVM.getPatientDetails(order.patientId),
+      future: _profileVM.getProfileDataById<PatientModel>(order.patientId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoadingCard();
@@ -112,7 +111,7 @@ class PharmacyOrdersRequestView extends StatelessWidget {
                                   as ImageProvider,
                         ),
                         const SizedBox(width: 5),
-                        Text(patient.fullName ?? "Unknown"),
+                        Text(patient.fullName),
                         Spacer(),
                         Text(
                           DateFormat('MM-dd-yyyy hh:mm a')
@@ -122,29 +121,17 @@ class PharmacyOrdersRequestView extends StatelessWidget {
                     ),
                     const Divider(),
                     Column(
-                      children: (order.medicines ?? []).map((medicine) {
+                      children: order.medicines.map((medicine) {
                         final name = Get.find<MedicineViewModel>()
-                            .getMedicineNameById(medicine["id"]);
-                        final quantity = medicine["quantity"] ?? "N/A";
+                            .getMedicineNameById(medicine.id);
+                        final quantity = medicine.quantity;
                         return Padding(
                           padding: const EdgeInsets.symmetric(vertical: 4.0),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    name.toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    "Quantity: $quantity",
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
+                              Text(name),
+                              Text("Qty: $quantity"),
                             ],
                           ),
                         );
@@ -329,8 +316,6 @@ class PharmacyOrdersRequestView extends StatelessWidget {
         //   onPressed: () {},
         //   color: Colors.red,
         // );
-        return null;
-      default:
         return null;
     }
   }

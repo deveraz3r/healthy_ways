@@ -1,3 +1,5 @@
+import 'package:healty_ways/utils/app_urls.dart';
+
 class MedicineModel {
   String id;
   final String name;

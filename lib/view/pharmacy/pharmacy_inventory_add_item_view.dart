@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:healty_ways/model/inventory_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/medicine_view_model.dart';
 import 'package:healty_ways/model/medicine_model.dart';
@@ -114,10 +115,11 @@ class _PharmacyInventoryAddItemViewState
                         selectedMedicine != null) {
                       final quantity = int.parse(_quantityController.text);
 
-                      inventoryViewModel.addMedicineToInventory(
-                        selectedMedicineId!,
-                        quantity,
-                      );
+                      inventoryViewModel.addMedicineToInventory(InventoryModel(
+                        medicineId: selectedMedicineId!,
+                        stock: quantity,
+                        userId: "0", // Replace with actual user ID in VM
+                      ));
 
                       Get.back(); // back to inventory
                     }

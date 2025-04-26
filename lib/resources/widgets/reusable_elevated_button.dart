@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import '../../utils/app_urls.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class ReuseableElevatedbutton extends StatelessWidget {
   const ReuseableElevatedbutton({

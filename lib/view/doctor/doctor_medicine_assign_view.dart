@@ -1,12 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/medicine_schedule_model.dart';
-import 'package:healty_ways/resources/widgets/reusable_app_bar.dart';
-import 'package:healty_ways/resources/widgets/reusable_elevated_button.dart';
-import 'package:healty_ways/view_model/appointments_view_model.dart';
-import 'package:healty_ways/view_model/assigned_medication_view_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
-import 'package:intl/intl.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class DoctorMedicineAssignView extends StatefulWidget {
   const DoctorMedicineAssignView({super.key});
@@ -21,13 +13,14 @@ class _DoctorMedicineAssignViewState extends State<DoctorMedicineAssignView> {
   final ProfileViewModel _profileVM = Get.find();
   final AppointmentsViewModel _appointmentsVM = Get.find();
   final String patientId = Get.arguments['patientId'];
+  //TODO: remove unessary import instead use patentId to get name
   final String patientName = Get.arguments['patientName'];
   final String appointmentId = Get.arguments['appointmentId'];
 
   @override
   void initState() {
     super.initState();
-    assignedVM.fetchAvailableMedicines();
+    // assignedVM.fetchAvailableMedicines();  //removed as medicine VM it is already called in assigned Meds VM
   }
 
   void _showMedicinePickerDialog(BuildContext context) {

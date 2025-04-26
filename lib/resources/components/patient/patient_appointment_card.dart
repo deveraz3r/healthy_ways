@@ -1,10 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/appointment_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/utils/routes/route_name.dart';
-import 'package:healty_ways/view_model/appointments_view_model.dart';
-import 'package:intl/intl.dart';
 
 class PatientAppointmentCard extends StatelessWidget {
   final AppointmentModel appointment;
@@ -17,7 +11,8 @@ class PatientAppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appointmentVM = Get.find<AppointmentsViewModel>();
-    final doctor = appointmentVM.getDoctorInfo(appointment.doctorId);
+    final doctor =
+        Get.find<DoctorsViewModel>().getDoctorInfo(appointment.doctorId);
 
     final formattedTime = DateFormat('h:mm a').format(appointment.time);
     final timeDiff = DateTime.now().difference(appointment.time);
@@ -137,6 +132,11 @@ class PatientAppointmentCard extends StatelessWidget {
                           AppointmentStatus.inProgress,
                         );
                       }
+
+                      await Get.find<ChatViewModel>().startAppointmentChat(
+                        appointment: appointment,
+                        otherUserId: appointment.doctorId,
+                      );
 
                       Get.toNamed(
                         RouteName.patientAppointmentStartView,

@@ -1,6 +1,4 @@
-import 'package:google_fonts/google_fonts.dart';
-
-import '../../utils/app_urls.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class ReusableAppBar extends StatelessWidget implements PreferredSizeWidget {
   ReusableAppBar({

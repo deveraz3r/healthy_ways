@@ -1,3 +1,5 @@
+import 'package:healty_ways/utils/app_urls.dart';
+
 enum OrderStatus {
   processing,
   inProgress,
@@ -9,7 +11,7 @@ class OrderModel {
   String id;
   String patientId;
   String? pharmacistId;
-  List<Map<String, dynamic>> medicines; // List of maps with 'id' and 'quantity'
+  List<OrderMedsModel> medicines; // Updated to use OrderMedsModel
   DateTime orderTime; // Date when order will be delivered
   OrderStatus status;
   List<OrderUpdate> updates;
@@ -31,12 +33,7 @@ class OrderModel {
         'id': id,
         'patientId': patientId,
         'pharmacistId': pharmacistId,
-        'medicines': medicines
-            .map((medicine) => {
-                  'id': medicine['id'],
-                  'quantity': medicine['quantity'],
-                })
-            .toList(),
+        'medicines': medicines.map((medicine) => medicine.toJson()).toList(),
         'orderTime': orderTime.toIso8601String(),
         'status': orderStatusToString(status),
         'updates': updates.map((u) => u.toJson()).toList(),
@@ -49,14 +46,9 @@ class OrderModel {
       id: json['id'] as String? ?? '', // fallback to empty string
       patientId: json['patientId'] as String? ?? '',
       pharmacistId: json['pharmacistId'] as String?, // nullable
-      medicines: List<Map<String, dynamic>>.from(
-        (json['medicines'] as List<dynamic>? ?? []).map((medicine) {
-          return {
-            'id': medicine['id'] ?? '',
-            'quantity': medicine['quantity'] ?? 1, // default quantity
-          };
-        }),
-      ),
+      medicines: (json['medicines'] as List<dynamic>? ?? [])
+          .map((medicine) => OrderMedsModel.fromJson(medicine))
+          .toList(),
       orderTime: DateTime.tryParse(json['orderTime'] ?? '') ?? DateTime.now(),
       status: _stringToOrderStatus(json['status'] ?? 'processing'),
       updates: (json['updates'] as List<dynamic>? ?? [])
@@ -84,7 +76,7 @@ class OrderModel {
     String? id,
     String? patientId,
     String? pharmacistId,
-    List<Map<String, dynamic>>? medicines,
+    List<OrderMedsModel>? medicines,
     DateTime? orderTime,
     OrderStatus? status,
     List<OrderUpdate>? updates,

@@ -87,9 +87,7 @@ class _PharmacistOrderDetailsViewState
   @override
   Widget build(BuildContext context) {
     final medicines = order.medicines.map((m) {
-      final medicineName =
-          Get.find<MedicineViewModel>().getMedicineNameById(m['id']);
-      return {'name': medicineName, 'quantity': m['quantity']};
+      return {'name': m.name, 'quantity': m.quantity};
     }).toList();
 
     return Scaffold(
@@ -146,7 +144,7 @@ class _PharmacistOrderDetailsViewState
             const SizedBox(height: 16),
             _sectionTitle("Medicines"),
             ...medicines.map((m) => ListTile(
-                  title: Text(m['name']),
+                  title: Text(m['name'] as String),
                   trailing: Text("Qty: ${m['quantity']}"),
                 )),
             const SizedBox(height: 16),

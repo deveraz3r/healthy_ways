@@ -1,7 +1,7 @@
-import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:healty_ways/model/inventory_model.dart';
 import 'package:healty_ways/model/user_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 import 'package:healty_ways/view_model/profile_view_model.dart';
 
 class InventoryViewModel extends GetxController {
@@ -37,16 +37,14 @@ class InventoryViewModel extends GetxController {
           .where('userId', isEqualTo: userId.value)
           .get();
 
-      inventory.assignAll(query.docs
-          .map((doc) => InventoryModel.fromJson(doc.data()))
-          .toList());
+      inventory.value =
+          query.docs.map((doc) => InventoryModel.fromJson(doc.data())).toList();
     } catch (e) {
-      print("Error fetching inventory: $e");
-      // Handle the error appropriately
+      _handleError("Failed to fetch inventory", e);
     }
   }
 
-  Future<void> updateStock(String medicineId, int newQuantity) async {
+  Future<void> updateStock(InventoryModel medicine) async {
     await initUser();
 
     try {
@@ -55,35 +53,35 @@ class InventoryViewModel extends GetxController {
           ? 'pharmacy_inventory'
           : 'patient_inventory';
 
+      medicine.userId = userId.value;
+
       // Query Firestore for the document where userId and medicineId match
       final querySnapshot = await _firestore
           .collection(collection)
           .where("userId", isEqualTo: userId.value)
-          .where("medicineId", isEqualTo: medicineId)
+          .where("medicineId", isEqualTo: medicine.medicineId)
           .get();
 
       // Update the stock for the matching medicineId
       for (var doc in querySnapshot.docs) {
-        await doc.reference.update({'stock': newQuantity});
+        await doc.reference.update({'stock': medicine.stock});
       }
 
       // Update the stock locally in the inventory list
-      final index =
-          inventory.indexWhere((item) => item.medicineId == medicineId);
+      final index = inventory
+          .indexWhere((item) => item.medicineId == medicine.medicineId);
       if (index != -1) {
-        inventory[index].stock = newQuantity;
+        inventory[index].stock = medicine.stock;
         inventory.refresh(); // Refresh the UI to reflect the change
       }
     } catch (e) {
-      print("Error updating stock: $e");
-      // Handle the error appropriately
+      _handleError("Failed to update stock", e);
     }
   }
 
   // Add medicine to patient inventory
   Future<void> addMedicineToInventory(
-    String medicineId,
-    int quantity,
+    InventoryModel newMedicine,
   ) async {
     await initUser();
 
@@ -91,50 +89,101 @@ class InventoryViewModel extends GetxController {
         ? 'pharmacy_inventory'
         : 'patient_inventory';
 
-    final newInventoryItem = InventoryModel(
-      medicineId: medicineId,
-      userId: userId.value,
-      stock: quantity,
-    );
+    newMedicine.userId = userId.value;
 
     try {
       // Check if the medicine already exists in the patient's inventory
       final querySnapshot = await _firestore
           .collection(collection)
           .where('userId', isEqualTo: userId.value)
-          .where('medicineId', isEqualTo: medicineId)
+          .where('medicineId', isEqualTo: newMedicine.medicineId)
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        print("Medicine does not exist in inventory, adding new entry...");
-        await _firestore.collection(collection).add(newInventoryItem.toJson());
+        await _firestore.collection(collection).add(newMedicine.toJson());
       } else {
         // Medicine already exists, update the quantity
         final doc = querySnapshot.docs.first;
         final existingQuantity = doc['stock'] ?? 0;
 
-        print("Medicine exists, updating quantity...");
         await _firestore.collection(collection).doc(doc.id).update({
-          'stock': existingQuantity + quantity,
+          'stock': existingQuantity + newMedicine.stock,
         });
       }
 
       // Update the local inventory list
-      final index =
-          inventory.indexWhere((item) => item.medicineId == medicineId);
+      final index = inventory
+          .indexWhere((item) => item.medicineId == newMedicine.medicineId);
 
       if (index == -1) {
         // Medicine not in local inventory, add it
-        inventory.add(newInventoryItem);
+        inventory.add(newMedicine);
       } else {
         // Update the stock in local inventory
-        inventory[index].stock += quantity;
+        inventory[index].stock += newMedicine.stock;
       }
 
       inventory.refresh();
-      print("Inventory updated successfully!");
     } catch (e) {
-      print('Error adding medicine to inventory: $e');
+      _handleError("Failed to add medicine to inventory", e);
     }
+  }
+
+  Future<void> revertStock(String medicineId, int quantity) async {
+    try {
+      final collection = userRole.value == UserRole.pharmacist
+          ? 'pharmacy_inventory'
+          : 'patient_inventory';
+
+      final querySnapshot = await _firestore
+          .collection(collection)
+          .where("userId", isEqualTo: userId.value)
+          .where("medicineId", isEqualTo: medicineId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final doc = querySnapshot.docs.first;
+        final currentStock = doc['stock'] ?? 0;
+
+        await doc.reference.update({'stock': currentStock + quantity});
+      }
+    } catch (e) {
+      _handleError("Failed to revert stock", e);
+    }
+  }
+
+  Future<bool> deductStock(String medicineId, int quantity) async {
+    try {
+      final collection = userRole.value == UserRole.pharmacist
+          ? 'pharmacy_inventory'
+          : 'patient_inventory';
+
+      final querySnapshot = await _firestore
+          .collection(collection)
+          .where("userId", isEqualTo: userId.value)
+          .where("medicineId", isEqualTo: medicineId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final doc = querySnapshot.docs.first;
+        final currentStock = doc['stock'] ?? 0;
+
+        if (currentStock >= quantity) {
+          await doc.reference.update({'stock': currentStock - quantity});
+          return true;
+        } else {
+          return false; // Not enough stock
+        }
+      }
+      return false; // Medicine not found
+    } catch (e) {
+      _handleError("Failed to deduct stock", e);
+      return false;
+    }
+  }
+
+  void _handleError(String message, dynamic error) {
+    Get.snackbar("Error", "$message: ${error.toString()}");
+    debugPrint("$message: $error");
   }
 }

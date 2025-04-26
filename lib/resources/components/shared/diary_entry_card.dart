@@ -1,9 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:healty_ways/model/diary_entry_model.dart';
-import 'package:healty_ways/model/user_model.dart';
-import 'package:healty_ways/view_model/health_records_view_model.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class DiaryEntryCard extends StatelessWidget {
   final DiaryEntryModel entry;

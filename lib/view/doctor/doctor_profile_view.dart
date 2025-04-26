@@ -1,8 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:healty_ways/model/doctor_model.dart';
 import 'package:healty_ways/utils/app_urls.dart';
-import 'package:healty_ways/view_model/profile_view_model.dart';
-import 'package:healty_ways/view_model/doctors_view_model.dart';
 
 class DoctorProfileView extends StatefulWidget {
   const DoctorProfileView({super.key});
@@ -64,22 +60,21 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
   }
 
   void _initializeControllers() {
-    final doctor = _profileVM.getRoleData<DoctorModel>();
-    if (doctor != null) {
-      _nameController.text = doctor.fullName;
-      _emailController.text = doctor.email;
-      _specialtyController.text = doctor.specialty;
-      _qualificationController.text = doctor.qualification;
-      _bioController.text = doctor.bio ?? '';
-    }
+    final doctor = _profileVM.profile as DoctorModel;
+
+    _nameController.text = doctor.fullName;
+    _emailController.text = doctor.email;
+    _specialtyController.text = doctor.specialty;
+    _qualificationController.text = doctor.qualification;
+    _bioController.text = doctor.bio ?? '';
   }
 
   // Create a local copy of the doctor's weekly schedule. If any day is missing, initialize it as an empty list.
   void _initializeWeeklySchedule() {
-    final doctor = _profileVM.getRoleData<DoctorModel>();
+    final doctor = _profileVM.profile as DoctorModel;
     _localWeeklySchedule = {};
     for (var day in _days) {
-      if (doctor != null && doctor.weeklySchedule.containsKey(day)) {
+      if (doctor.weeklySchedule.containsKey(day)) {
         _localWeeklySchedule[day] =
             List<AppointmentSlot>.from(doctor.weeklySchedule[day]!);
       } else {
@@ -95,8 +90,7 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
     String? qualification,
     String? bio,
   }) {
-    final doctor = _profileVM.getRoleData<DoctorModel>();
-    if (doctor == null) return;
+    final doctor = _profileVM.profile as DoctorModel;
 
     _profileVM.updateProfile(DoctorModel(
       uid: doctor.uid,
@@ -221,10 +215,7 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Obx(() {
-              final doctor = _profileVM.getRoleData<DoctorModel>();
-              if (doctor == null) {
-                return Center(child: CircularProgressIndicator());
-              }
+              final doctor = _profileVM.profile as DoctorModel;
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -319,6 +310,7 @@ class _DoctorProfileViewState extends State<DoctorProfileView> {
                     textColor: Colors.white,
                     onPressed: () {
                       FirebaseAuth.instance.signOut();
+                      Get.delete<AuthViewModel>();
                       Get.offAllNamed(RouteName.login);
                     },
                   ),

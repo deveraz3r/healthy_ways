@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:healty_ways/model/pharmacist_model.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class PharmacistCard extends StatelessWidget {
   final PharmacistModel pharmacist;

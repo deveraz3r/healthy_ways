@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:healty_ways/model/allergy_model.dart';
-import 'package:healty_ways/view_model/health_records_view_model.dart';
-import 'package:get/get.dart';
+import 'package:healty_ways/utils/app_urls.dart';
 
 class AllergyCard extends StatelessWidget {
   const AllergyCard({super.key, required this.allergy});

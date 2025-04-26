@@ -1,46 +1,5 @@
-import 'package:healty_ways/view/doctor/doctor_allergy_view.dart';
-import 'package:healty_ways/view/doctor/doctor_appointment_history_details_view.dart';
-import 'package:healty_ways/view/doctor/doctor_appointment_start_view.dart';
-import 'package:healty_ways/view/doctor/doctor_appointments_view.dart';
-import 'package:healty_ways/view/doctor/doctor_assigned_patients_view.dart';
-import 'package:healty_ways/view/doctor/doctor_home_view.dart';
-import 'package:healty_ways/view/doctor/doctor_immunization_view.dart';
-import 'package:healty_ways/view/doctor/doctor_medicine_assign_view.dart';
-import 'package:healty_ways/view/doctor/doctor_profile_view.dart';
-import 'package:healty_ways/view/patient/patient_allergy_view.dart';
-import 'package:healty_ways/view/patient/patient_appointment_history_view.dart';
-import 'package:healty_ways/view/patient/appointment_report_view.dart';
-import 'package:healty_ways/view/patient/book_doctor_details_view.dart';
-import 'package:healty_ways/view/patient/book_doctor_view.dart';
-import 'package:healty_ways/view/patient/home_view.dart';
-import 'package:healty_ways/view/patient/inventory_add_item_view.dart';
-import 'package:healty_ways/view/patient/inventory_view.dart';
-import 'package:healty_ways/view/patient/medication_history_view.dart';
-import 'package:healty_ways/view/patient/patient_appointment_start_view.dart';
-import 'package:healty_ways/view/patient/patient_contact_pharmacist_view.dart';
-import 'package:healty_ways/view/patient/patient_diary_enteries_view.dart';
-import 'package:healty_ways/view/patient/patient_immunization_view.dart';
-import 'package:healty_ways/view/patient/patient_orders_details_view.dart';
-import 'package:healty_ways/view/patient/patient_profile_view.dart';
-import 'package:healty_ways/view/patient/patient_orders_view.dart';
-import 'package:healty_ways/view/patient/request_medicne_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_create_order_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_home_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_inventory_add_item_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_inventory_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_lab_records.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_order_details_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_orders_request_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_delivery_status_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_profile_view.dart';
-import 'package:healty_ways/view/pharmacy/pharmacy_upload_lab_report_view.dart';
-import 'package:healty_ways/view/shared/all_medicine_view.dart';
-import 'package:healty_ways/view/shared/auth/login_view.dart';
-import 'package:healty_ways/view/shared/auth/signup_view.dart';
-import 'package:healty_ways/view/shared/chat_list_view.dart';
-import 'package:healty_ways/view/shared/chats_view.dart';
-import 'package:healty_ways/view/shared/diary_entery_view.dart';
-import 'package:healty_ways/view/shared/splash_view.dart';
+import 'package:healty_ways/view/shared/lab_report_details_view.dart';
+import 'package:healty_ways/view/shared/lab_reports_list.dart';
 
 import '/utils/app_urls.dart';
 
@@ -65,12 +24,16 @@ class Routes {
           page: () => LoginView(),
         ),
         GetPage(
-          name: RouteName.chatsListView,
-          page: () => ChatsListView(),
+          name: RouteName.oneToOneChatsListView,
+          page: () => OneToOneChatsListView(),
         ),
         GetPage(
           name: RouteName.chatView,
           page: () => ChatView(),
+        ),
+        GetPage(
+          name: RouteName.chatComponent,
+          page: () => AppointmentChatView(),
         ),
         GetPage(
           name: RouteName.diaryEnteryView,
@@ -79,6 +42,14 @@ class Routes {
         GetPage(
           name: RouteName.allMedicinesView,
           page: () => AllMedicineView(),
+        ),
+        GetPage(
+          name: RouteName.labReportDetailsView,
+          page: () => LabReportDetailsView(),
+        ),
+        GetPage(
+          name: RouteName.labReportsListView,
+          page: () => LabReportsListView(),
         ),
 
         //------------------- Patient -------------------
